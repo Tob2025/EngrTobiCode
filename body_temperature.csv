@@ -1,0 +1,27 @@
+
+DATE / TIME,LOCATION,TEMPERATURE,CALC TEMPERATURE,DISTANCE,TEMPERATURE RANGE,SENSOR ID
+
+2024-12-09 05:53:24,Bathroom,34.75,32.79,1.00,Low Temperature,MLX-P
+2024-12-09 05:53:38,Toilet,32.25,31.56,2.00,Low Temperature,MLX-P
+2024-12-09 05:53:57,Kitchen,30.75,30.32,3.00,Low Temperature,MLX-P
+2024-12-09 05:54:11,Staircase,30.25,29.08,4.00,Low Temperature,MLX-P
+2024-12-09 05:54:24,Passage,31.75,31.17,2.00,Low Temperature,MLX-R
+2024-12-09 05:54:38,Toilet,30.25,29.97,3.00,Low Temperature,MLX-R
+2024-12-09 05:54:53,Passage,29.25,28.77,4.00,Low Temperature,MLX-R
+2024-12-09 05:55:12,Toilet,28.40,29.34,2.00,Low Temperature,RS T-10
+2024-12-09 05:55:28,Bathroom,28.70,27.93,3.00,Low Temperature,RS T-10
+2024-12-09 05:55:42,Staircase,25.30,26.51,4.00,Low Temperature,RS T-10
+2024-12-09 05:55:58,Kitchen,25.00,25.09,5.00,Low Temperature,RS T-10
+2024-12-09 05:56:14,Bedroom,33.75,32.79,1.00,Low Temperature,MLX-P
+2024-12-09 05:56:29,Passage,31.50,31.56,2.00,Low Temperature,MLX-P
+2024-12-09 05:56:44,Passage,30.20,30.32,3.00,Low Temperature,MLX-P
+2024-12-09 05:57:02,Bathroom,29.50,29.08,4.00,Low Temperature,MLX-P
+2024-12-09 05:57:16,Bathroom,28.50,27.85,5.00,Low Temperature,MLX-P
+2024-12-09 05:57:34,Living Room,30.30,30.76,1.00,Low Temperature,RS T-10
+2024-12-09 05:57:52,Kitchen,29.30,29.34,2.00,Low Temperature,RS T-10
+2024-12-09 05:58:10,Office,28.80,27.93,3.00,Low Temperature,RS T-10
+2024-12-09 05:58:24,Bathroom,28.30,26.51,4.00,Low Temperature,RS T-10
+2024-12-09 05:58:38,Toilet,29.30,31.17,2.00,Low Temperature,MLX-R
+2024-12-09 05:58:54,Staircase,28.80,29.97,3.00,Low Temperature,MLX-R
+2024-12-09 05:59:08,Staircase,28.30,28.77,4.00,Low Temperature,MLX-R
+2024-12-09 05:59:25,Living Room,28.00,27.57,5.00,Low Temperature,MLX-R

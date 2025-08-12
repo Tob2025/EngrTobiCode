@@ -1,0 +1,123 @@
+
+DATE / TIME,LOCATION,AMBIENT TEMPERATURE,TEMPERATURE RANGE
+
+2024-08-13 12:33:19,Toilet,10.00,Low Temperature
+2024-08-13 12:33:28,Kitchen,10.00,Low Temperature
+2024-08-13 12:33:34,Staircase,10.00,Low Temperature
+2024-08-13 12:33:41,Passage,10.00,Low Temperature
+2024-08-13 12:33:47,Office,9.00,Low Temperature
+2024-08-13 12:33:54,Bedroom,10.00,Low Temperature
+2024-08-13 12:34:01,Passage,10.00,Low Temperature
+2024-08-13 12:34:10,Office,10.00,Low Temperature
+2024-08-13 12:34:18,Bedroom,9.00,Low Temperature
+2024-08-13 12:34:28,Bathroom,10.00,Low Temperature
+2024-08-13 12:34:36,Living Room,9.00,Low Temperature
+2024-08-13 12:34:43,Living Room,9.00,Low Temperature
+2024-08-13 12:34:54,Staircase,11.00,Low Temperature
+2024-08-13 12:35:00,Bedroom,10.00,Low Temperature
+2024-08-13 12:35:05,Bathroom,11.00,Low Temperature
+2024-08-13 12:35:16,Staircase,10.00,Low Temperature
+2024-08-13 12:35:24,Bathroom,10.00,Low Temperature
+2024-08-13 12:35:33,Bedroom,10.00,Low Temperature
+2024-08-13 12:35:40,Bedroom,11.00,Low Temperature
+2024-08-13 12:35:47,Bedroom,10.00,Low Temperature
+2024-08-13 12:35:56,Living Room,11.00,Low Temperature
+2024-08-13 12:36:03,Toilet,11.00,Low Temperature
+2024-08-13 12:36:10,Passage,10.00,Low Temperature
+2024-08-13 12:36:15,Bedroom,11.00,Low Temperature
+2024-08-13 12:36:26,Office,9.00,Low Temperature
+2024-08-13 12:36:32,Bedroom,10.00,Low Temperature
+2024-08-13 12:36:40,Living Room,11.00,Low Temperature
+2024-08-13 12:36:47,Toilet,11.00,Low Temperature
+2024-08-13 12:36:57,Toilet,10.00,Low Temperature
+2024-08-13 12:37:03,Kitchen,18.00,Temperature within specified range
+2024-08-13 12:37:05,Living Room,12.00,Low Temperature
+2024-08-13 12:37:13,Toilet,12.00,Low Temperature
+2024-08-13 12:37:19,Bedroom,14.00,Low Temperature
+2024-08-13 12:37:28,Staircase,15.00,Low Temperature
+2024-08-13 12:37:37,Office,13.00,Low Temperature
+2024-08-13 12:37:43,Passage,14.00,Low Temperature
+2024-08-13 12:37:53,Passage,15.00,Low Temperature
+2024-08-13 12:37:58,Bathroom,14.00,Low Temperature
+2024-08-13 12:38:07,Passage,15.00,Low Temperature
+2024-08-13 12:38:15,Bathroom,14.00,Low Temperature
+2024-08-13 12:38:25,Passage,12.00,Low Temperature
+2024-08-13 12:38:32,Bathroom,14.00,Low Temperature
+2024-08-13 12:38:40,Living Room,12.00,Low Temperature
+2024-08-13 12:38:51,Staircase,14.00,Low Temperature
+2024-08-13 12:38:59,Bathroom,14.00,Low Temperature
+2024-08-13 12:39:09,Living Room,14.00,Low Temperature
+2024-08-13 12:39:19,Passage,14.00,Low Temperature
+2024-08-13 12:39:28,Staircase,15.00,Low Temperature
+2024-08-13 12:39:39,Passage,13.00,Low Temperature
+2024-08-13 12:39:44,Office,12.00,Low Temperature
+2024-08-13 12:39:54,Passage,13.00,Low Temperature
+2024-08-13 12:40:05,Office,14.00,Low Temperature
+2024-08-13 12:40:11,Staircase,13.00,Low Temperature
+2024-08-13 12:40:18,Living Room,14.00,Low Temperature
+2024-08-13 12:40:29,Passage,13.00,Low Temperature
+2024-08-13 12:40:40,Office,12.00,Low Temperature
+2024-08-13 12:40:49,Office,12.00,Low Temperature
+2024-08-13 12:40:58,Living Room,15.00,Low Temperature
+2024-08-13 12:41:09,Staircase,12.00,Low Temperature
+2024-08-13 12:41:16,Office,14.00,Low Temperature
+2024-08-13 12:41:21,Living Room,15.00,Low Temperature
+2024-08-13 12:41:29,Toilet,14.00,Low Temperature
+2024-08-13 12:41:37,Passage,15.00,Low Temperature
+2024-08-13 12:41:42,Office,13.00,Low Temperature
+2024-08-13 12:41:51,Toilet,13.00,Low Temperature
+2024-08-13 12:41:59,Bathroom,15.00,Low Temperature
+2024-08-13 12:42:10,Living Room,13.00,Low Temperature
+2024-08-13 12:42:17,Passage,12.00,Low Temperature
+2024-08-13 12:42:22,Toilet,13.00,Low Temperature
+2024-08-13 12:42:31,Bathroom,15.00,Low Temperature
+2024-08-13 12:42:38,Passage,15.00,Low Temperature
+2024-08-13 12:42:48,Kitchen,15.00,Low Temperature
+2024-08-13 12:42:58,Office,12.00,Low Temperature
+2024-08-13 12:43:06,Living Room,15.00,Low Temperature
+2024-08-13 12:43:14,Passage,14.00,Low Temperature
+2024-08-13 12:43:22,Office,13.00,Low Temperature
+2024-08-13 12:43:31,Bathroom,15.00,Low Temperature
+2024-08-13 12:43:41,Passage,14.00,Low Temperature
+2024-08-13 12:43:52,Bedroom,13.00,Low Temperature
+2024-08-13 12:44:01,Bedroom,22.00,Temperature within specified range
+2024-08-13 12:44:03,Staircase,25.00,Temperature within specified range
+2024-08-13 12:44:05,Bedroom,18.00,Temperature within specified range
+2024-08-13 12:44:07,Toilet,21.00,Temperature within specified range
+2024-08-13 12:44:09,Living Room,26.00,High Temperature
+2024-08-13 12:44:16,Office,16.00,Low Temperature
+2024-08-13 12:44:27,Kitchen,28.00,High Temperature
+2024-08-13 12:44:34,Bedroom,29.00,High Temperature
+2024-08-13 12:44:45,Passage,20.00,Temperature within specified range
+2024-08-13 12:44:47,Living Room,27.00,High Temperature
+2024-08-13 12:44:57,Office,29.00,High Temperature
+2024-08-13 12:45:02,Toilet,28.00,High Temperature
+2024-08-13 12:45:12,Staircase,19.00,Temperature within specified range
+2024-08-13 12:45:14,Passage,18.00,Temperature within specified range
+2024-08-13 12:45:16,Office,28.00,High Temperature
+2024-08-13 12:45:25,Bathroom,17.00,Temperature within specified range
+2024-08-13 12:45:27,Bedroom,22.00,Temperature within specified range
+2024-08-13 12:45:29,Office,20.00,Temperature within specified range
+2024-08-13 12:45:31,Toilet,23.00,Temperature within specified range
+2024-08-13 12:45:33,Living Room,23.00,Temperature within specified range
+2024-08-13 12:45:35,Office,28.00,High Temperature
+2024-08-13 12:45:42,Toilet,25.00,Temperature within specified range
+2024-08-13 12:45:44,Passage,25.00,Temperature within specified range
+2024-08-13 12:45:46,Toilet,23.00,Temperature within specified range
+2024-08-13 12:45:48,Bathroom,23.00,Temperature within specified range
+2024-08-13 12:45:50,Toilet,29.00,High Temperature
+2024-08-13 12:46:00,Toilet,16.00,Low Temperature
+2024-08-13 12:46:05,Toilet,19.00,Temperature within specified range
+2024-08-13 12:46:07,Living Room,19.00,Temperature within specified range
+2024-08-13 12:46:09,Kitchen,21.00,Temperature within specified range
+2024-08-13 12:46:11,Bathroom,27.00,High Temperature
+2024-08-13 12:46:20,Office,25.00,Temperature within specified range
+2024-08-13 12:46:22,Bathroom,15.00,Low Temperature
+2024-08-13 12:46:33,Kitchen,20.00,Temperature within specified range
+2024-08-13 12:46:35,Bedroom,15.00,Low Temperature
+2024-08-13 12:46:42,Bathroom,14.00,Low Temperature
+2024-08-13 12:46:52,Kitchen,28.00,High Temperature
+2024-08-13 12:46:58,Office,21.00,Temperature within specified range
+2024-08-13 12:47:00,Bathroom,19.00,Temperature within specified range
+2024-08-13 12:47:02,Staircase,19.00,Temperature within specified range
+2024-08-13 12:47:04,Passage,16.00,Low Temperature

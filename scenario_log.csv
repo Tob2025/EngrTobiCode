@@ -1,0 +1,5 @@
+time,room,ambient_temp,distance,measured_temp,interpolated_temp,stddev,acceptable_range,status,action
+07:00,Bedroom,21.0,1.1,36.5,36.76,0.19,36.57 to 36.95,Normal,Routine logging
+08:00,Kitchen,25.2,1.5,37.2,36.91,0.23,36.68 to 37.14,Normal,Routine logging
+09:00,Living Room,25.7,2.0,37.0,36.68,0.26,36.42 to 36.94,Abnormal,"Alert GP, adjust HVAC, dispatch robot"
+10:00,Study,29.0,1.2,37.3,37.12,0.21,36.91 to 37.33,Normal,Routine logging
