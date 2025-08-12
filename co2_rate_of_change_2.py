@@ -12,7 +12,7 @@ class CO2DataAnalyzer:
         self.fixed_interval = 10  # Hardcoded 10-minute assumption
 
     def process_data(self):
-        """Process data with fixed 10-minute intervals between readings"""
+        """Process data with fixed 10-minute intervals between readings """
         try:
             with open(self.input_file, newline='', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
