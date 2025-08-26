@@ -1,0 +1,98 @@
+﻿time,temp_c,activity,action_taken
+7:00,22,Vacant,log to diary
+7:10,22.17,Vacant,log to diary
+7:20,22.2,Vacant,log to diary
+7:30,22.21,Vacant,log to diary
+7:40,22.5,Vacant,log to diary
+7:50,22.7,Vacant,log to diary
+8:00,23,Baseline pre-reading (cool morning),"Opening windows, log to diary"
+8:10,23.2,Reading,"keep windows open, log to diary"
+8:20,23.3,Reading,"keep windows open, log to diary"
+8:30,23.4,Reading,"keep windows open, log to diary"
+8:40,23.5,Reading,"keep windows open, log to diary"
+8:50,23.83,Reading,"keep windows open, log to diary"
+9:00,24,Reading,"keep windows open, log to diary"
+9:10,23.9,Reading,"keep windows open, log to diary"
+9:20,23.8,Reading,"keep windows open, log to diary"
+9:30,23.9,Reading,"keep windows open, log to diary"
+9:40,23.9,Reading,"keep windows open, log to diary"
+9:50,24,Reading,"keep windows open, log to diary"
+10:00,24,Reading,"keep windows open, log to diary"
+10:10,23.89,Cleaner present,"Activating the cooling system, log to diary"
+10:20,23.8,Cleaner present,"keep the cooling system ON, log to diary"
+10:30,23.9,Cleaner present,"keep the cooling system ON, log to diary"
+10:40,23.9,Cleaner present,"keep the cooling system ON, log to diary"
+10:50,23.9,Cleaner present,"keep the cooling system ON, log to diary"
+11:00,24,Cleaner left,"Opening doors, log to diary"
+11:10,23.9,Transition/Vacant,"keep windows open, log to diary"
+11:20,23.8,Vacant,"keep windows open, log to diary"
+11:30,23.8,Vacant,log to diary
+11:40,23.9,Vacant,log to diary
+11:50,23.89,Vacant,log to diary
+12:00,24,Vacant,log to diary
+12:10,23.87,Vacant,log to diary
+12:20,23.74,Vacant,log to diary
+12:30,23.7,Vacant,log to diary
+12:40,23.6,Vacant,log to diary
+12:50,23.5,Vacant,log to diary
+13:00,23.22,Vacant,log to diary
+13:10,23.26,Vacant,log to diary
+13:20,23.31,Vacant,log to diary
+13:30,23.35,Vacant,log to diary
+13:40,23.39,Vacant,log to diary
+13:50,23.44,Vacant,log to diary
+14:00,23.48,Vacant,log to diary
+14:10,23.4,Baseline post-lunch (warmest period),"Activating the cooling system, log to diary"
+14:20,23.15,Post-nap,"keep the cooling system ON, log to diary"
+14:30,22.99,Tea,"keep the cooling system ON, log to diary"
+14:40,22.83,Tea,"keep the cooling system ON, log to diary"
+14:50,22.66,Watching TV,"keep the cooling system ON, log to diary"
+15:00,22.5,Watching TV,"keep the cooling system ON, log to diary"
+15:10,22.53,Watching TV,"keep the cooling system ON, log to diary"
+15:20,22.57,Watching TV (peak),"keep the cooling system ON, log to diary"
+15:30,22.6,Watching TV (peak),"keep the cooling system ON, log to diary"
+15:40,22.63,Watching TV,"keep the cooling system ON, log to diary"
+15:50,22.67,Watching TV,"keep the cooling system ON, log to diary"
+16:00,22.7,Watching TV,"Opening windows, log to diary"
+16:10,22.8,Watching TV,"keep windows open, log to diary"
+16:20,22.9,Watching TV,"keep windows open, log to diary"
+16:30,23,Watching TV,"keep windows open, log to diary"
+16:40,23.1,Watching TV,"keep windows open, log to diary"
+16:50,23.2,Preparing to leave,"keep windows open, log to diary"
+17:00,23.3,Leaving,"keep windows open, log to diary"
+17:10,23.23,Vacant,"Controlling the cooling system (off), log to diary"
+17:20,23.16,Vacant,log to diary
+17:30,23.09,Vacant,log to diary
+17:40,23.01,Vacant,log to diary
+17:50,22.94,Vacant,log to diary
+18:00,22.87,Vacant,log to diary
+18:10,22.87,Vacant,log to diary
+18:20,22.87,Vacant,log to diary
+18:30,22.87,Vacant,log to diary
+18:40,22.87,Vacant,log to diary
+18:50,22.87,Vacant,log to diary
+19:00,22.87,Vacant,log to diary
+19:10,22.9,Vacant,log to diary
+19:20,22.93,Vacant,log to diary
+19:30,22.96,Vacant,log to diary
+19:40,22.98,Vacant,log to diary
+19:50,23.01,Vacant,log to diary
+20:00,23.04,Vacant,log to diary
+20:10,23.2,Baseline after dinner (cooling evening),"Opening windows, log to diary"
+20:20,23.36,Watching TV,"keep windows open, log to diary"
+20:30,23.52,Watching TV,"keep windows open, log to diary"
+20:40,23.68,Watching TV (fan on),"keep windows open, log to diary"
+20:50,23.84,Watching TV,"keep windows open, log to diary"
+21:00,24,Leaving for bedroom,"Controlling the cooling system (ON), log to diary"
+21:10,23.82,Vacant,"Controlling the cooling system (off), log to diary"
+21:20,23.8,Vacant,log to diary
+21:30,23.78,Vacant,log to diary
+21:40,23.7,Vacant,log to diary
+21:50,23.7,Vacant,log to diary
+22:00,23.7,Vacant,log to diary
+22:10,23.77,Vacant,log to diary
+22:20,23.63,Vacant,log to diary
+22:30,23.5,Vacant,log to diary
+22:40,23.4,Vacant,log to diary
+22:50,23.38,Vacant,log to diary
+23:00,23.3,Vacant,log to diary

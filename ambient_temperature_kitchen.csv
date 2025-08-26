@@ -1,0 +1,98 @@
+﻿time,temp_c,activity,action_taken
+7:00,22,Vacant,log to diary
+7:10,22.01,Vacant,log to diary
+7:20,22.03,Vacant,log to diary
+7:30,22.04,Vacant,log to diary
+7:40,22.05,Vacant,log to diary
+7:50,22.07,Vacant,log to diary
+8:00,22.08,Vacant,log to diary
+8:10,22.14,Vacant,log to diary
+8:20,22.19,Vacant,log to diary
+8:30,22.25,Vacant,log to diary
+8:40,22.31,Vacant,log to diary
+8:50,22.36,Vacant,log to diary
+9:00,22.42,Vacant,log to diary
+9:10,22.45,Vacant,log to diary
+9:20,22.48,Vacant,log to diary
+9:30,22.51,Vacant,log to diary
+9:40,22.54,Vacant,log to diary
+9:50,22.57,Vacant,log to diary
+10:00,22.6,Vacant,log to diary
+10:10,22.63,Vacant,log to diary
+10:20,22.66,Vacant,log to diary
+10:30,22.7,Vacant,log to diary
+10:40,22.73,Vacant,log to diary
+10:50,22.76,Vacant,log to diary
+11:00,22.79,Vacant,log to diary
+11:10,22.83,Vacant,log to diary
+11:20,22.87,Vacant,log to diary
+11:30,22.9,Vacant,log to diary
+11:40,22.94,Vacant,log to diary
+11:50,22.98,Vacant,log to diary
+12:00,23.02,Vacant,log to diary
+12:10,23.05,Vacant,log to diary
+12:20,23.08,Vacant,log to diary
+12:30,23.12,Vacant,log to diary
+12:40,23.15,Vacant,log to diary
+12:50,23.18,Vacant,log to diary
+13:00,23.21,Vacant,log to diary
+13:10,23.22,Vacant,log to diary
+13:20,23.23,Vacant,log to diary
+13:30,23.25,Vacant,log to diary
+13:40,23.26,Vacant,log to diary
+13:50,23.27,Vacant,log to diary
+14:00,23.28,Vacant,log to diary
+14:10,23.29,Vacant,log to diary
+14:20,23.31,Vacant,log to diary
+14:30,23.32,Vacant,log to diary
+14:40,23.33,Vacant,log to diary
+14:50,23.35,Vacant,log to diary
+15:00,23.36,Vacant,log to diary
+15:10,23.31,Vacant,log to diary
+15:20,23.26,Vacant,log to diary
+15:30,23.21,Vacant,log to diary
+15:40,23.16,Vacant,log to diary
+15:50,23.11,Vacant,log to diary
+16:00,23.06,Vacant,log to diary
+16:10,23.17,Vacant,log to diary
+16:20,23.27,Vacant,log to diary
+16:30,23.38,Vacant,log to diary
+16:40,23.49,Vacant,log to diary
+16:50,23.59,Vacant,log to diary
+17:00,23.7,Vacant,log to diary
+17:10,23.72,Vacant,log to diary
+17:20,23.73,Baseline pre-cooking (late-day warmth),"Activating the cooling system, log to diary"
+17:30,23.75,Cooking activities,"Opening windows, log to diary"
+17:40,23.77,Cooking activities,"keep windows open, log to diary"
+17:50,23.78,Cooking activities,"keep windows open, log to diary"
+18:00,23.8,Cooking activities,"Opening doors, log to diary"
+18:10,23.76,Cooking activities,"keep doors open, log to diary"
+18:20,23.72,Leaving for dinner,"keep doors open, log to diary"
+18:30,23.68,Vacant,"Controlling the cooling system (off), log to diary"
+18:40,23.63,Vacant,log to diary
+18:50,23.59,Vacant,log to diary
+19:00,23.55,Vacant,log to diary
+19:10,23.52,Vacant,log to diary
+19:20,23.49,Vacant,log to diary
+19:30,23.46,Vacant,log to diary
+19:40,23.42,Vacant,log to diary
+19:50,23.39,Vacant,log to diary
+20:00,23.36,Vacant,log to diary
+20:10,23.3,Vacant,log to diary
+20:20,23.25,Vacant,log to diary
+20:30,23.19,Vacant,log to diary
+20:40,23.13,Vacant,log to diary
+20:50,23.08,Vacant,log to diary
+21:00,23.02,Vacant,log to diary
+21:10,23.02,Vacant,log to diary
+21:20,23.02,Vacant,log to diary
+21:30,23.02,Vacant,log to diary
+21:40,23.02,Vacant,log to diary
+21:50,23.02,Vacant,log to diary
+22:00,23.02,Vacant,log to diary
+22:10,23,Vacant,log to diary
+22:20,22.98,Vacant,log to diary
+22:30,22.96,Vacant,log to diary
+22:40,22.94,Vacant,log to diary
+22:50,22.92,Vacant,log to diary
+23:00,22.9,Vacant,log to diary
