@@ -1,0 +1,3134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellbeing Monitoring System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .blocks-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .block {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .block h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .sensor-item, .processor-item {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .sensor-item:hover, .processor-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
+        .sensor-name, .script-name {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .sensor-info, .script-info {
+            font-size: 0.9em;
+            color: #718096;
+            margin-bottom: 5px;
+        }
+        
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .file-input-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);
+        }
+        
+        .log-block {
+            grid-column: 1 / -1;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-timestamp {
+            color: #718096;
+            font-size: 0.8em;
+        }
+        
+        .processor-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active { background-color: #48bb78; }
+        .status-inactive { background-color: #cbd5e0; }
+        
+        .sensor-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: #e6fffa;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85em;
+        }
+        
+        .stat-label {
+            color: #2c7a7b;
+            font-weight: bold;
+        }
+        
+        .stat-value {
+            color: #234e52;
+        }
+        
+        .script-processor {
+            background: #e6f7ff;
+            border: 2px solid #1890ff;
+        }
+        
+        .script-processor.selected {
+            border-color: #52c41a;
+            background: #f6ffed;
+        }
+        
+        .downloads-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e8e8e8;
+        }
+        
+        .download-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e8e8e8;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e8e8e8;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #52c41a;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .script-content {
+            background: #1a1a1a;
+            color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .matched-csv-info {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e8f5e8;
+            border-radius: 6px;
+            border-left: 4px solid #52c41a;
+        }
+        
+        .matched-csv-info h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .matched-csv-item {
+            background: white;
+            padding: 6px 10px;
+            margin: 4px 0;
+            border-radius: 4px;
+            border: 1px solid #d9f7be;
+            font-size: 0.85em;
+        }
+        
+        /* Enhanced Actions Block */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        
+        .action-item {
+            background: #f0f8ff;
+            border: 2px solid #e6f3ff;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .action-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .action-item.triggered {
+            background: #e8f5e8;
+            border-color: #52c41a;
+        }
+        
+        .action-item.activated {
+            background: #e8f5e8;
+            border-color: #52c41a;
+            color: #2d6a2d;
+        }
+        
+        .action-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+        
+        .action-name {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+        
+        .action-status {
+            color: #718096;
+            font-size: 0.8em;
+        }
+        
+        .action-status.active {
+            color: #48bb78;
+            font-weight: bold;
+        }
+        
+        .action-shape {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 1.2em;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .action-item.activated .action-shape {
+            opacity: 1;
+        }
+        
+        /* Diary Block styles */
+        .diary-entry {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .diary-entry.system-entry {
+            background: #f0f8ff;
+            border-left-color: #667eea;
+        }
+        
+        .diary-entry.action-entry {
+            background: #fff0f5;
+            border-left-color: #ed64a6;
+        }
+        
+        .diary-timestamp {
+            color: #718096;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .diary-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Sticky diary header */
+        .diary-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+            padding: 15px 0;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+
+        .diary-header h2 {
+            margin: 0;
+        }
+
+        .diary-content {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Graph Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-header h2 {
+            color: #2d3748;
+            margin: 0;
+        }
+
+        .close {
+            color: #718096;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #e53e3e;
+        }
+
+        .graph-preview {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 400px;
+        }
+
+        .modal-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .graph-stats {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .graph-stats h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .no-graph-message {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 50px 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #e2e8f0;
+        }
+
+        .script-graph-list {
+            margin-bottom: 20px;
+        }
+
+        .script-graph-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .script-graph-item:hover {
+            background: #e6f3ff;
+            border-color: #667eea;
+        }
+
+        .script-graph-item.selected {
+            background: #e8f5e8;
+            border-color: #52c41a;
+        }
+        /* Timeline title styling */
+.timeline-title {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.timeline-title h3 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Wellbeing Monitoring System</h1>
+        </div>
+        
+        <div class="blocks-container">
+            <!-- Block 1: Sensors -->
+            <div class="block">
+                <h2>📊 Sensor Level</h2>
+                <div class="file-upload">
+                    <label for="csvFileInput" class="file-input-wrapper">
+                        <input type="file" id="csvFileInput" multiple accept=".csv" />
+                        📁 Upload CSV Files
+                    </label>
+                    <button class="btn btn-danger" onclick="clearSensors()">🗑️ Clear All</button>
+                </div>
+                <div id="sensorsList">
+                    <p style="color: #718096; font-style: italic;">No sensors loaded. Upload CSV files to get started.</p>
+                </div>
+            </div>
+            
+            <!-- Block 2: Processors -->
+            <div class="block">
+                <h2>⚙️ Processor Level</h2>
+                <div class="file-upload">
+                    <label for="scriptFileInput" class="file-input-wrapper">
+                        <input type="file" id="scriptFileInput" multiple accept=".py,.js,.txt" />
+                        📄 Upload Script Files
+                    </label>
+                    <button class="btn btn-danger" onclick="clearScripts()">🗑️ Clear Scripts</button>
+                </div>
+                <div id="scriptsList">
+                    <p style="color: #718096; font-style: italic;">No scripts loaded. Upload script files to get started.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Block 3: Actions -->
+        <div class="blocks-container">
+            <div class="block log-block">
+                <h2>🎯 Action Level</h2>
+                <div class="actions-grid">
+                    <div class="action-item" data-action="adjust_windows" data-color="#48bb78" data-shape="⬜">
+                        <div class="action-icon">🪟</div>
+                        <div class="action-name">Windows Action</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">⬜</div>
+                    </div>
+                    <div class="action-item" data-action="adjust_cooling_system" data-color="#667eea" data-shape="🔵">
+                        <div class="action-icon">❄️</div>
+                        <div class="action-name">Cooling System Action</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">🔵</div>
+                    </div>
+                    <div class="action-item" data-action="adjust_heating_system" data-color="#e53e3e" data-shape="🔺">
+                        <div class="action-icon">🔥</div>
+                        <div class="action-name">Heating System Action</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">🔺</div>
+                    </div>
+                    <div class="action-item" data-action="adjust_doors" data-color="#ed8936" data-shape="◆">
+                        <div class="action-icon">🚪</div>
+                        <div class="action-name">Doors Action</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">◆</div>
+                    </div>
+                    <div class="action-item" data-action="dispatch_robot" data-color="#9f7aea" data-shape="⭐">
+                        <div class="action-icon">🤖</div>
+                        <div class="action-name">Dispatch Robot</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">⭐</div>
+                    </div>
+                    <div class="action-item" data-action="notify_family" data-color="#38b2ac" data-shape="♦">
+                        <div class="action-icon">📱</div>
+                        <div class="action-name">Contact Family</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">♦</div>
+                    </div>
+                    <div class="action-item" data-action="log_to_diary" data-color="#805ad5" data-shape="⬟">
+                        <div class="action-icon">📝</div>
+                        <div class="action-name">Log to Diary</div>
+                        <div class="action-status">Ready</div>
+                        <div class="action-shape">⬟</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Block 4: Diary -->
+        <div class="blocks-container">
+            <div class="block log-block" id="diaryBlock">
+                <div class="diary-header">
+                    <h2>📖 Diary Block</h2>
+                    <div class="diary-controls">
+                        <button class="btn btn-secondary" onclick="clearDiary()">Clear Diary</button>
+                        <button class="btn" onclick="exportDiary()">📥 Export Diary</button>
+                        <button class="btn btn-secondary" onclick="openGraphModal()">📈 View Graphs</button>
+                        <button class="btn btn-secondary" onclick="openActionsTimelineModal()">⏱️ Actions Timeline</button>
+                    </div>
+                </div>
+                <div class="diary-content">
+                    <div id="diaryLog">
+                        <div class="diary-entry system-entry">
+                            <div class="diary-timestamp">System initialized - Ready for monitoring</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Block 5: Downloads -->
+        <div class="blocks-container">
+            <div class="block">
+                <h2>📥 Generated Reports & Exports</h2>
+                <div class="downloads-container" id="downloadsContainer">
+                    <p style="color: #718096; font-style: italic; text-align: center;">
+                        Process data to generate downloadable reports and graphs
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Timeline Modal -->
+   <div id="actionsTimelineModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⏱️ Actions Timeline</h2>
+            <span class="close" onclick="closeActionsTimelineModal()">&times;</span>
+        </div>
+        <div id="actionsTimelineContainer">
+            <div class="no-graph-message">
+                <h3>No action data available</h3>
+                <p>Execute a script to generate action timeline data</p>
+            </div>
+        </div>
+        <div class="modal-controls">
+            <button class="btn btn-secondary" onclick="closeActionsTimelineModal()">Close</button>
+            <button class="btn" onclick="downloadActionsTimeline()" id="downloadActionsBtn" disabled>📥 Download Timeline Data</button>
+            <button class="btn btn-info" onclick="openLegendModal()">ℹ️ View Legend</button>
+        </div>
+    </div>
+</div>
+
+<!-- Sub-modal for Legend Explanation -->
+<div id="legendModal" class="modal sub-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Legend: Actions & Rooms</h2>
+            <span class="close" onclick="closeLegendModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <h3>Action Shapes</h3>
+            <p>Each shape represents a specific action type:</p>
+            <ul class="legend-list">
+                <!-- <li><span class="shape">●</span> Log to Diary (circle)</li> -->
+                <li><span class="shape">■</span> Adjust Windows (rect)</li>
+                <li><span class="shape">▲</span> Adjust Cooling System (triangle)</li>
+                <li><span class="shape">♦</span> Adjust Heating System (rectRot)</li>
+                <li><span class="shape">★</span> Adjust Doors (star)</li>
+                <li><span class="shape">◆</span> Dispatch Robot (rectRounded)</li>
+                <li><span class="shape">x</span> Notify Family (crossRot)</li>
+            </ul>
+
+            <h3>Room Colors</h3>
+            <p>Each color represents a specific room:</p>
+            <ul class="legend-list">
+                <li><span class="color-swatch" style="background-color: #3b82f6;"></span> Bedroom (Blue)</li>
+                <li><span class="color-swatch" style="background-color: #ef4444;"></span> Dining (Red)</li>
+                <li><span class="color-swatch" style="background-color: #10b981;"></span> Kitchen (Green)</li>
+                <li><span class="color-swatch" style="background-color: #f59e0b;"></span> Lounge (Orange)</li>
+                <!-- <li><span class="color-swatch" style="background-color: #8b5cf6;"></span> Office (Purple)</li> -->
+                <!-- <li><span class="color-swatch" style="background-color: #06b6d4;"></span> Bathroom (Cyan)</li> -->
+                <!-- <li><span class="color-swatch" style="background-color: #3b82f6;"></span> Generated (Generated)</li> -->
+            </ul>
+        </div>
+        <div class="modal-controls">
+            <button class="btn btn-secondary" onclick="closeLegendModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Basic modal styles (assuming you have existing styles, adding specifics for sub-modal and legend) */
+    .sub-modal {
+        z-index: 1001; /* Higher than main modal to overlay it */
+    }
+
+    .legend-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .legend-list li {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .shape {
+        font-size: 1.2em;
+        margin-right: 10px;
+        display: inline-block;
+        width: 20px;
+        text-align: center;
+    }
+
+    .color-swatch {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+</style>
+
+<script>
+    // JavaScript functions to open/close the legend modal
+    function openLegendModal() {
+        document.getElementById('legendModal').style.display = 'block';
+    }
+
+    function closeLegendModal() {
+        document.getElementById('legendModal').style.display = 'none';
+    }
+
+    // Assuming you have existing functions for the main modal
+    // Add event listener to close when clicking outside (optional)
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('legendModal')) {
+            closeLegendModal();
+        }
+    }
+</script>
+
+    <!-- Graphs Modal -->
+    <div id="graphModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📈 Data Visualization</h2>
+                <span class="close" onclick="closeGraphModal()">&times;</span>
+            </div>
+            <div id="graphContainer">
+                <div class="no-graph-message">
+                    <h3>No graph data available</h3>
+                    <p>Execute a script to generate visualization data</p>
+                </div>
+            </div>
+            <div class="modal-controls">
+                <button class="btn btn-secondary" onclick="closeGraphModal()">Close</button>
+                <button class="btn" onclick="downloadGraph()" id="downloadGraphBtn" disabled>📥 Download Graph Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let sensorData = {};
+        let scriptFiles = {};
+        let processedData = [];
+        let chart = null;
+        let executionHistory = [];
+        let diaryEntries = [];
+        let scriptGraphs = {}; // Store graphs for each script execution
+        let actionsTimelineData = [];
+        let actionStates = {
+            'adjust_windows': false,
+            'adjust_cooling_system': false,
+            'adjust_heating_system': false,
+            'adjust_doors': false,
+            'dispatch_robot': false,
+            'notify_family': false,
+            'log_to_diary': false
+        };
+
+        // Action shape mapping - shapes represent action types
+        const actionShapeMapping = {
+            'log_to_diary': { shape: '●', pointStyle: 'circle' },
+            'adjust_windows': { shape: '■', pointStyle: 'rect' },
+            'adjust_cooling_system': { shape: '▲', pointStyle: 'triangle' },
+            'adjust_heating_system': { shape: '♦', pointStyle: 'rectRot' },
+            'adjust_doors': { shape: '★', pointStyle: 'star' },
+            'dispatch_robot': { shape: '◆', pointStyle: 'diamond' }, // Updated to ◆
+            'notify_family': { shape: '⬟', pointStyle: 'crossRot' } // Updated to ⬟
+        };
+
+        // Room color mapping - colors represent rooms
+       // Room color mapping - colors represent rooms
+const roomColorMapping = {
+    'bedroom': '#3b82f6',      // Blue
+    'dining': '#ef4444',       // Red
+    'dining room': '#ef4444',  // Red (alternative name)
+    'kitchen': '#10b981',      // Green
+    'lounge': '#f59e0b',       // Orange
+    // 'office': '#8b5cf6',       // Purple
+    // 'bathroom': '#06b6d4',     // Cyan
+    // 'generated': '#3b82f6'     // Generated/default blue
+};
+        // Legacy action metadata (kept for backwards compatibility)
+        const actionMetadata = {
+            'adjust_windows': { color: '#48bb78' },
+            'adjust_cooling_system': { color: '#667eea' },
+            'adjust_heating_system': { color: '#e53e3e' },
+            'adjust_doors': { color: '#ed8936' },
+            'dispatch_robot': { color: '#9f7aea' },
+            'notify_family': { color: '#38b2ac' },
+            'log_to_diary': { color: '#805ad5' }
+        };
+        
+        // Initialize the application
+        window.onload = function() {
+            logDiary('System initialized and ready for monitoring');
+        };
+        
+        // File input handlers
+        document.getElementById('csvFileInput').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            
+            logDiary(`Loading ${files.length} CSV file(s)...`);
+            
+            Array.from(files).forEach((file, index) => {
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        processCsvData(file.name, results.data);
+                        if (index === files.length - 1) {
+                            logDiary(`Successfully loaded all ${files.length} CSV files`);
+                            rematchAllScripts();
+                        }
+                    },
+                    error: function(error) {
+                        logDiary(`Error loading ${file.name}: ${error.message}`);
+                    }
+                });
+            });
+        });
+        
+        document.getElementById('scriptFileInput').addEventListener('change', function(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+            
+            logDiary(`Loading ${files.length} script file(s)...`);
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    processScriptData(file.name, e.target.result);
+                    if (index === files.length - 1) {
+                        logDiary(`Successfully loaded all ${files.length} script files`);
+                    }
+                };
+                reader.readAsText(file);
+            });
+        });
+        
+        function processCsvData(filename, data) {
+            if (data.length === 0) return;
+            
+            // Extract sensor information
+            const sensorInfo = {
+                filename: filename,
+                dataPoints: data.length,
+                columns: Object.keys(data[0]),
+                data: data,
+                sensorType: detectSensorType(filename, data[0]),
+                roomName: extractRoomName(filename),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Calculate statistics if temperature data exists
+            if (data[0].temp_c) {
+                const temperatures = data.map(row => parseFloat(row.temp_c)).filter(t => !isNaN(t));
+                sensorInfo.stats = {
+                    min: Math.min(...temperatures),
+                    max: Math.max(...temperatures),
+                    avg: temperatures.reduce((a, b) => a + b, 0) / temperatures.length,
+                    count: temperatures.length
+                };
+            }
+            
+            // Calculate statistics if CO2 data exists
+            if (data[0].co2_ppm) {
+                const co2Levels = data.map(row => parseFloat(row.co2_ppm)).filter(c => !isNaN(c));
+                sensorInfo.co2Stats = {
+                    min: Math.min(...co2Levels),
+                    max: Math.max(...co2Levels),
+                    avg: co2Levels.reduce((a, b) => a + b, 0) / co2Levels.length,
+                    count: co2Levels.length
+                };
+                
+                // Calculate rate of change if not present
+                if (!data[0].rate_of_change) {
+                    const rates = [];
+                    for (let i = 1; i < co2Levels.length; i++) {
+                        rates.push(co2Levels[i] - co2Levels[i-1]);
+                    }
+                    rates.unshift(0);
+                    sensorInfo.data.forEach((row, index) => {
+                        row.rate_of_change = rates[index] || 0;
+                    });
+                    sensorInfo.columns.push('rate_of_change');
+                    
+                    sensorInfo.rateStats = {
+                        min: Math.min(...rates),
+                        max: Math.max(...rates),
+                        avg: rates.reduce((a, b) => a + b, 0) / rates.length,
+                        count: rates.length
+                    };
+                }
+            }
+            
+            sensorData[filename] = sensorInfo;
+            updateSensorsList();
+            logDiary(`Processed sensor data: ${filename} (${data.length} records)`);
+        }
+        
+        function processScriptData(filename, content) {
+            const scriptInfo = {
+                filename: filename,
+                content: content,
+                type: detectScriptType(filename, content),
+                uploadedAt: new Date().toISOString(),
+                requiredColumns: extractRequiredColumns(content),
+                description: extractScriptDescription(content),
+                requiredCsvFiles: extractRequiredCsvFiles(content),
+                matchedCsvs: [],
+                isBodyTempScript: detectBodyTempScript(filename, content) 
+            };
+            
+            scriptFiles[filename] = scriptInfo;
+            
+            // Auto-match CSV files
+            scriptInfo.matchedCsvs = autoMatchCsvFiles(scriptInfo);
+            
+            updateScriptsList();
+            logDiary(`Loaded script: ${filename} (${scriptInfo.type})`);
+            
+            if (scriptInfo.matchedCsvs.length > 0) {
+                logDiary(`Auto-matched ${scriptInfo.matchedCsvs.length} CSV files for script: ${filename}`);
+            } else {
+                logDiary(`No matching CSV files found for script: ${filename}`);
+            }
+        }
+
+        function detectBodyTempScript(filename, content) {
+    return filename.toLowerCase().includes('body_temperature') || 
+           content.includes('body_temperature') ||
+           content.includes('MLX') ||
+           content.includes('bilinear_interpolation') ||
+           content.includes('measured_body_temp_c');
+}
+        
+        function extractRequiredCsvFiles(content) {
+            const csvFiles = [];
+            
+            // Look for file references in the script
+            const patterns = [
+                /read_csv\(['"]([^'"]+\.csv)['"][)]/gi,
+                /open\(['"]([^'"]+\.csv)['"][)]/gi,
+                /load\(['"]([^'"]+\.csv)['"][)]/gi,
+                /['"]([^'"]*\w+\.csv)['"]/g,
+                // Look for common sensor-related keywords
+                /temperature/gi,
+                /humidity/gi,
+                /pressure/gi,
+                /co2/gi,
+                /activity/gi,
+                /bedroom/gi,
+                /kitchen/gi,
+                /dining/gi,
+                /lounge/gi
+            ];
+            
+            // Extract explicit CSV file names
+            patterns.slice(0, 4).forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(content)) !== null) {
+                    const filename = match[1];
+                    if (filename.includes('.csv') && !csvFiles.includes(filename)) {
+                        csvFiles.push(filename);
+                    }
+                }
+            });
+            
+            // Extract keywords for matching
+            const keywords = [];
+            patterns.slice(4).forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(content)) !== null) {
+                    const keyword = match[0].toLowerCase();
+                    if (!keywords.includes(keyword)) {
+                        keywords.push(keyword);
+                    }
+                }
+            });
+            
+            return { files: csvFiles, keywords: keywords };
+        }
+        
+        function autoMatchCsvFiles(scriptInfo) {
+            const matchedCsvs = [];
+            const requiredFiles = scriptInfo.requiredCsvFiles;
+            
+            // First, try to match explicit file names
+            if (requiredFiles.files && requiredFiles.files.length > 0) {
+                Object.keys(sensorData).forEach(csvKey => {
+                    const csvInfo = sensorData[csvKey];
+                    requiredFiles.files.forEach(requiredFile => {
+                        if (csvInfo.filename.toLowerCase().includes(requiredFile.toLowerCase()) ||
+                            requiredFile.toLowerCase().includes(csvInfo.filename.toLowerCase().replace('.csv', ''))) {
+                            if (!matchedCsvs.includes(csvKey)) {
+                                matchedCsvs.push(csvKey);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // If no explicit matches, try keyword matching
+            if (matchedCsvs.length === 0 && requiredFiles.keywords && requiredFiles.keywords.length > 0) {
+                Object.keys(sensorData).forEach(csvKey => {
+                    const csvInfo = sensorData[csvKey];
+                    requiredFiles.keywords.forEach(keyword => {
+                        if (csvInfo.filename.toLowerCase().includes(keyword) ||
+                            csvInfo.sensorType.toLowerCase().includes(keyword) ||
+                            csvInfo.roomName.toLowerCase().includes(keyword) ||
+                            csvInfo.columns.some(col => col.toLowerCase().includes(keyword))) {
+                            if (!matchedCsvs.includes(csvKey)) {
+                                matchedCsvs.push(csvKey);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // If still no matches, try to match based on common column names
+            if (matchedCsvs.length === 0) {
+                const scriptColumns = scriptInfo.requiredColumns.map(col => col.toLowerCase());
+                Object.keys(sensorData).forEach(csvKey => {
+                    const csvInfo = sensorData[csvKey];
+                    const csvColumns = csvInfo.columns.map(col => col.toLowerCase());
+                    const commonColumns = scriptColumns.filter(col => csvColumns.includes(col));
+                    
+                    if (commonColumns.length > 0) {
+                        if (!matchedCsvs.includes(csvKey)) {
+                            matchedCsvs.push(csvKey);
+                        }
+                    }
+                });
+            }
+            
+            return matchedCsvs;
+        }
+        
+        function rematchAllScripts() {
+            Object.keys(scriptFiles).forEach(scriptKey => {
+                const script = scriptFiles[scriptKey];
+                script.matchedCsvs = autoMatchCsvFiles(script);
+                logDiary(`Re-matched ${script.matchedCsvs.length} CSV files for script: ${script.filename}`);
+            });
+            updateScriptsList();
+        }
+        
+        function detectSensorType(filename, firstRow) {
+            if (filename.includes('temperature') || firstRow.temp_c) return 'Temperature';
+            if (filename.includes('humidity') || firstRow.humidity) return 'Humidity';
+            if (filename.includes('pressure') || firstRow.pressure) return 'Pressure';
+            if (filename.includes('co2') || firstRow.co2_ppm) return 'CO2';
+            if (filename.includes('activity') || firstRow.activity) return 'Activity';
+            return 'Generic';
+        }
+        
+        function detectScriptType(filename, content) {
+            if (filename.endsWith('.py')) return 'Python';
+            if (filename.endsWith('.js')) return 'JavaScript';
+            if (content.includes('import pandas') || content.includes('import numpy')) return 'Python';
+            if (content.includes('function') || content.includes('const ') || content.includes('let ')) return 'JavaScript';
+            return 'Text';
+        }
+        
+        function extractRequiredColumns(content) {
+            const columns = [];
+            // Look for column references in the script
+            const columnPatterns = [
+                /'([^']+)'/g,
+                /"([^"]+)"/g,
+                /\[['"]([^'"]+)['"]\]/g,
+                /\.([a-zA-Z_][a-zA-Z0-9_]*)/g
+            ];
+            
+            columnPatterns.forEach(pattern => {
+                const matches = content.match(pattern);
+                if (matches) {
+                    matches.forEach(match => {
+                        const column = match.replace(/['".\[\]]/g, '');
+                        if (column.length > 0 && !columns.includes(column)) {
+                            columns.push(column);
+                        }
+                    });
+                }
+            });
+            
+            return columns.slice(0, 10); // Limit to first 10 potential columns
+        }
+        
+        function extractScriptDescription(content) {
+            // Look for comments at the beginning
+            const lines = content.split('\n');
+            const description = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (line.startsWith('#') || line.startsWith('//') || line.startsWith('"""') || line.startsWith("'''")) {
+                    description.push(line.replace(/^[#\/\*"']+\s*/, ''));
+                    if (description.length >= 3) break;
+                } else if (line.length > 0 && description.length > 0) {
+                    break;
+                }
+            }
+            
+            return description.join(' ');
+        }
+        
+        function extractRoomName(filename) {
+            const roomMatch = filename.match(/(bedroom|dining|kitchen|lounge|room|office|bathroom)/i);
+            if (roomMatch) {
+                return roomMatch[0].charAt(0).toUpperCase() + roomMatch[0].slice(1);
+            }
+            
+            const parts = filename.replace('.csv', '').split('_');
+            return parts[parts.length - 1].charAt(0).toUpperCase() + parts[parts.length - 1].slice(1);
+        }
+        
+        function updateSensorsList() {
+            const sensorsList = document.getElementById('sensorsList');
+            const sensorKeys = Object.keys(sensorData);
+            
+            if (sensorKeys.length === 0) {
+                sensorsList.innerHTML = '<p style="color: #718096; font-style: italic;">No sensors loaded. Upload CSV files to get started.</p>';
+                return;
+            }
+            
+            let html = '';
+            sensorKeys.forEach(key => {
+                const sensor = sensorData[key];
+                html += `
+                    <div class="sensor-item">
+                        <div class="sensor-name">${sensor.sensorType} Sensor - ${sensor.roomName}</div>
+                        <div class="sensor-info">📁 File: ${sensor.filename}</div>
+                        <div class="sensor-info">📊 Data Points: ${sensor.dataPoints}</div>
+                        <div class="sensor-info">🔗 Columns: ${sensor.columns.join(', ')}</div>
+                        ${sensor.stats ? `
+                            <div class="sensor-stats">
+                                <div class="stat-item">
+                                    <div class="stat-label">Min</div>
+                                    <div class="stat-value">${sensor.stats.min.toFixed(1)}°C</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Max</div>
+                                    <div class="stat-value">${sensor.stats.max.toFixed(1)}°C</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Avg</div>
+                                    <div class="stat-value">${sensor.stats.avg.toFixed(1)}°C</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        ${sensor.co2Stats ? `
+                            <div class="sensor-stats">
+                                <div class="stat-item">
+                                    <div class="stat-label">Min CO2</div>
+                                    <div class="stat-value">${sensor.co2Stats.min.toFixed(0)} ppm</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Max CO2</div>
+                                    <div class="stat-value">${sensor.co2Stats.max.toFixed(0)} ppm</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">Avg CO2</div>
+                                    <div class="stat-value">${sensor.co2Stats.avg.toFixed(0)} ppm</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            sensorsList.innerHTML = html;
+        }
+        
+        function updateScriptsList() {
+            const scriptsList = document.getElementById('scriptsList');
+            const scriptKeys = Object.keys(scriptFiles);
+            
+            if (scriptKeys.length === 0) {
+                scriptsList.innerHTML = '<p style="color: #718096; font-style: italic;">No scripts loaded. Upload script files to get started.</p>';
+                return;
+            }
+            
+            let html = '';
+            scriptKeys.forEach(key => {
+                const script = scriptFiles[key];
+                html += `
+                    <div class="processor-item script-processor" id="script-${key.replace(/[^a-zA-Z0-9]/g, '_')}">
+                        <div class="script-name">
+                            <span class="status-indicator status-active"></span>
+                            ${script.filename} (${script.type})
+                        </div>
+                        ${script.description ? `<div class="script-info">${script.description}</div>` : ''}
+                        
+                        ${script.matchedCsvs.length > 0 ? `
+                            <div class="matched-csv-info">
+                                <h4>Auto-matched CSV files (${script.matchedCsvs.length}):</h4>
+                                ${script.matchedCsvs.map(csvKey => {
+                                    const csvInfo = sensorData[csvKey];
+                                    return `<div class="matched-csv-item">${csvInfo.filename} (${csvInfo.sensorType} - ${csvInfo.roomName})</div>`;
+                                }).join('')}
+                            </div>
+                        ` : `
+                            <div class="matched-csv-info" style="background: #fff5f5; border-left-color: #e53e3e;">
+                                <h4>⚠️ No matching CSV files found</h4>
+                                <p style="margin: 0; font-size: 0.85em; color: #718096;">Upload CSV files or check script requirements</p>
+                            </div>
+                        `}
+                        
+                        <!-- Code preview removed as requested -->
+                        
+                        <div class="processor-controls">
+                            <button class="btn btn-secondary" onclick="executeScript('${key}')" ${script.matchedCsvs.length === 0 ? 'disabled' : ''}>
+                                ▶️ Execute Script
+                            </button>
+                            <button class="btn" onclick="toggleScriptView('${key.replace(/[^a-zA-Z0-9]/g, '_')}')">
+                                👁️ View Full Script
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            scriptsList.innerHTML = html;
+        }
+        
+        function toggleScriptView(scriptId) {
+            const element = document.getElementById(`script-${scriptId}`);
+            const scriptContent = element.querySelector('.script-content');
+            const originalKey = Object.keys(scriptFiles).find(key => key.replace(/[^a-zA-Z0-9]/g, '_') === scriptId);
+            const script = scriptFiles[originalKey];
+            
+            if (scriptContent.style.maxHeight === 'none') {
+                scriptContent.style.maxHeight = '200px';
+                scriptContent.innerHTML = script.content.substring(0, 300) + (script.content.length > 300 ? '...' : '');
+            } else {
+                scriptContent.style.maxHeight = 'none';
+                scriptContent.innerHTML = script.content;
+            }
+        }
+        
+        function executeScript(scriptKey) {
+            const script = scriptFiles[scriptKey];
+            if (!script) {
+                logDiary(`Error: Script ${scriptKey} not found`);
+                return;
+            }
+            
+            if (script.matchedCsvs.length === 0) {
+                logDiary(`Error: No CSV files matched for script ${script.filename}`);
+                return;
+            }
+            
+            logDiary(`Executing script: ${script.filename}`);
+            logDiary(`Using CSV files: ${script.matchedCsvs.join(', ')}`);
+            
+            // Scroll to actions block
+            scrollToActionsBlock();
+            
+            // Simulate script execution with action detection
+            simulateScriptExecution(script, script.matchedCsvs);
+        }
+        
+        function scrollToActionsBlock() {
+            const actionsBlock = document.querySelector('.actions-grid').closest('.block');
+            if (actionsBlock) {
+                actionsBlock.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                // Add visual highlight effect
+                actionsBlock.style.border = '3px solid #667eea';
+                actionsBlock.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.3)';
+                setTimeout(() => {
+                    actionsBlock.style.border = '1px solid rgba(255,255,255,0.2)';
+                    actionsBlock.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+                }, 2000);
+            }
+        }
+        
+        function simulateScriptExecution(script, selectedCsvs) {
+    logDiary(`Starting execution of ${script.filename}...`);
+    
+    setTimeout(() => {
+        logDiary(`Loading data from ${selectedCsvs.length} CSV file(s)...`);
+        
+        setTimeout(() => {
+            logDiary(`Processing data with ${script.type} script...`);
+            
+            setTimeout(() => {
+                let actionResults = [];
+                let generatedCsvData = null;
+                
+                // Check if this is a body temperature script
+                 actionResults = [];
+ generatedCsvData = null;
+
+// Process actions for ALL scripts (including body temp)
+const csvActionsFound = checkCsvActionsExist(selectedCsvs);
+
+if (csvActionsFound) {
+    actionResults = extractActionsFromCsv(selectedCsvs);
+    logDiary(`Found ${actionResults.length} actions in CSV data`);
+} else {
+    generatedCsvData = generateCsvWithActions(script, selectedCsvs);
+    actionResults = generatedCsvData.actions;
+    logDiary(`Generated new CSV with ${actionResults.length} actions`);
+    addGeneratedCsvToDownloads(script, generatedCsvData);
+}
+
+// Generate appropriate graph data based on script type
+let graphData;
+if (script.isBodyTempScript) {
+    logDiary('Processing body temperature analysis...');
+    graphData = generateBodyTempResults(script, selectedCsvs);
+    logDiary(`Body temperature analysis completed!`);
+    logDiary(`Processed ${graphData.totalRows} temperature readings`);
+} else {
+    graphData = generateScriptResults(script, selectedCsvs, generatedCsvData);
+    logDiary(`Script execution completed successfully!`);
+    logDiary(`Processed ${graphData.totalRows} data points`);
+}
+// If the body-temperature graph generated actions (e.g., abnormal readings), merge them so
+// the action block and timeline get triggered as before.
+if (graphData && graphData.isBodyTempGraph && graphData.actions && graphData.actions.length > 0) {
+    if (!Array.isArray(actionResults)) actionResults = [];
+    // Only keep actions that match the action block (exclude log_to_diary)
+    const allowedActions = ['adjust_windows','adjust_cooling_system','adjust_heating_system','adjust_doors','dispatch_robot','notify_family'];
+    const filteredGraphActions = (graphData.actions || []).filter(a => {
+        const name = a.action || '';
+        const norm = typeof normalizeActionName === 'function' ? normalizeActionName(name) : (name || '').toString().replace(/\s+/g, '_').toLowerCase();
+        return allowedActions.includes(norm) && norm !== 'log_to_diary';
+    }).map(a => ({ ...a, action: normalizeActionName(a.action) }));
+
+    actionResults = actionResults.concat(filteredGraphActions);
+    logDiary(`Merged ${filteredGraphActions.length} graph-generated body-temp actions`);
+}
+
+// For body temperature graphs, ensure we only keep the three MLX-P series (measured, interpolated, abnormal)
+if (graphData && graphData.isBodyTempGraph && Array.isArray(graphData.datasets)) {
+    graphData.datasets = graphData.datasets.filter(ds => {
+        const lbl = (ds.label || '').toString().toLowerCase();
+        return lbl.includes('measured body temperature') || lbl.includes('body temperature') || lbl.includes('mean temperature') || lbl.includes('abnormal');
+    });
+}
+
+// Store graph data with actions for ALL scripts
+const scriptId = script.filename + '_' + Date.now();
+scriptGraphs[scriptId] = {
+    scriptName: script.filename,
+    graphData: graphData,
+    timestamp: new Date(),
+    csvFiles: selectedCsvs,
+    actions: actionResults,
+    isBodyTempGraph: script.isBodyTempScript
+};
+
+// Process actions for ALL scripts (including body temp)
+if (Array.isArray(actionResults) && actionResults.length > 0) {
+    // pass current script filename so actions get tagged correctly
+    processActionResults(actionResults, script.filename);
+    logDiary(`Triggered ${actionResults.length} actions`);
+}
+                
+                executionHistory.push({
+                    script: script.filename,
+                    csvFiles: selectedCsvs,
+                    timestamp: new Date(),
+                    results: graphData || {},
+                    actions: actionResults,
+                    scriptId: scriptId || script.filename + '_' + Date.now()
+                });
+                
+            }, 1000);
+        }, 500);
+    }, 300);
+}
+
+function generateBodyTempResults(script, selectedCsvs) {
+    const results = {
+        datasets: [],
+        labels: [],
+        totalRows: 0,
+        statistics: {},
+        scriptName: script.filename,
+        isBodyTempGraph: true
+    };
+    
+    const colors = [
+        'rgba(220, 20, 60, 1)',    // Crimson for measured temp
+        'rgba(30, 144, 255, 1)',   // DodgerBlue for body temp
+        'rgba(255, 140, 0, 1)'     // DarkOrange for abnormal readings
+    ];
+    
+    selectedCsvs.forEach((csvKey, index) => {
+        const sensor = sensorData[csvKey];
+        if (!sensor) return;
+
+        results.totalRows += sensor.dataPoints || sensor.data.length;
+
+        // Process body temperature data specifically
+        if (sensor.data[0].measured_body_temp_c) {
+            // Build time labels and raw series (keep full ordering)
+            const timeLabels = sensor.data.map((row, idx) => (row.time && row.time.toString()) || `Point ${idx + 1}`);
+            const measuredAll = sensor.data.map(row => {
+                const v = parseFloat(row.measured_body_temp_c);
+                return isNaN(v) ? null : v;
+            });
+            const bodyAll = sensor.data.map(row => {
+                const v = parseFloat(row.body_temp || row.mean_temp_c);
+                return isNaN(v) ? null : v;
+            });
+
+            if (results.labels.length === 0) {
+                results.labels = timeLabels.slice(0, 50);
+            }
+
+            // Detect MLX-P sensor selection (match Python's MLX-P style)
+            const sensorType = (sensor.sensorType || '').toString().toUpperCase();
+            const isMLXP = sensorType.includes('MLX-P') || (sensor.filename && sensor.filename.toUpperCase().includes('MLX-P'));
+
+            // Prepare data slices that align with labels (use up to first 50 points)
+            const sliceCount = Math.min(50, results.labels.length, measuredAll.length);
+            const measured = measuredAll.slice(0, sliceCount);
+            const bodyTemps = bodyAll.slice(0, sliceCount);
+            const labelSlice = results.labels.slice(0, sliceCount);
+
+            // Measured body temperature line
+            // Calculate standard deviation for measured
+            function calcStdDev(arr) {
+                const n = arr.length;
+                if (n < 2) return Array(n).fill(0);
+                const mean = arr.reduce((a, b) => a + b, 0) / n;
+                return arr.map(v => {
+                    if (v === null || isNaN(v)) return 0;
+                    return Math.sqrt(arr.reduce((sum, x) => sum + Math.pow((x - mean), 2), 0) / n);
+                });
+            }
+            const measuredStdDev = calcStdDev(measured);
+            results.datasets.push({
+                label: `Measured Body Temperature`,
+                data: measured,
+                borderColor: isMLXP ? 'rgba(220,20,60,1)' : colors[0],
+                backgroundColor: isMLXP ? 'rgba(220,20,60,0.2)' : colors[0].replace('1)', '0.2)'),
+                tension: isMLXP ? 0 : 0.4,
+                pointStyle: isMLXP ? 'circle' : 'circle',
+                pointRadius: isMLXP ? 5 : 4,
+                borderWidth: isMLXP ? 1.5 : undefined,
+                fill: false,
+                errorBars: measuredStdDev
+            });
+
+            // Calculated/interpolated body temperature line
+            if (bodyTemps.length > 0) {
+                // Change label to 'Expected Body Temperature' for the interpolated/mean line
+                const expectedStdDev = calcStdDev(bodyTemps);
+                results.datasets.push({
+                    label: `Expected Body Temperature`,
+                    data: bodyTemps,
+                    borderColor: isMLXP ? 'rgba(30,144,255,1)' : colors[1],
+                    backgroundColor: isMLXP ? 'rgba(30,144,255,0.2)' : colors[1].replace('1)', '0.2)'),
+                    tension: isMLXP ? 0 : 0.4,
+                    pointStyle: isMLXP ? 'rect' : 'rect',
+                    pointRadius: isMLXP ? 5 : 4,
+                    borderDash: isMLXP ? [6, 4] : [5, 5],
+                    borderWidth: isMLXP ? 1.5 : undefined,
+                    fill: false,
+                    errorBars: expectedStdDev
+                });
+            }
+
+            // Add abnormal readings as scatter points aligned to time labels
+            const abnormalPoints = [];
+            sensor.data.forEach((row, idx) => {
+                if (row.within_range === 'No') {
+                    const t = (row.time && row.time.toString()) || `Point ${idx + 1}`;
+                    const v = parseFloat(row.measured_body_temp_c);
+                    if (!isNaN(v)) abnormalPoints.push({ x: t, y: v });
+                }
+            });
+
+            if (abnormalPoints.length > 0) {
+                results.datasets.push({
+                    label: 'Abnormal Readings',
+                    data: abnormalPoints.slice(0, 50),
+                    borderColor: isMLXP ? 'rgba(255,140,0,1)' : colors[2],
+                    backgroundColor: isMLXP ? 'rgba(255,140,0,1)' : colors[2],
+                    pointStyle: 'cross',
+                    pointRadius: isMLXP ? 8 : 6,
+                    showLine: false,
+                    type: 'scatter',
+                    parsing: false
+                });
+
+                // Build action objects for abnormal readings so the action block can react
+                if (!results.actions) results.actions = [];
+                abnormalPoints.slice(0, 50).forEach((pt, idx) => {
+                    // attempt to parse time string into a Date; fallback to now
+                    let ts = new Date();
+                    try {
+                        if (pt.x && typeof pt.x === 'string' && pt.x.includes(':')) {
+                            const parts = pt.x.split(':').map(Number);
+                            ts = new Date();
+                            ts.setHours(parts[0] || 0, parts[1] || 0, parts[2] || 0, 0);
+                        }
+                    } catch (e) { ts = new Date(); }
+
+                    // Find the row in sensor.data that matches this abnormal point (by time and value)
+                    let row = null;
+                    if (sensor.data && sensor.data.length > idx) {
+                        // Try to match by index (since abnormalPoints are built in order)
+                        row = sensor.data.find(r => (r.time && r.time.toString() === pt.x) && parseFloat(r.measured_body_temp_c) === pt.y);
+                        if (!row) {
+                            // fallback: try by index
+                            row = sensor.data[idx];
+                        }
+                    }
+                    const roomName = (row && row.room) ? row.room : (sensor.roomName || (sensor.data[0] && sensor.data[0].room) || 'Unknown');
+                    const measuredVal = pt.y;
+                    const reason = `Abnormal body temperature ${measuredVal}°C at ${pt.x}`;
+                    const actionObjs = [
+                        { timestamp: ts, room: roomName, sensor_type: 'Body Temperature', value: measuredVal, action: 'dispatch_robot', reason, script: script.filename },
+                        { timestamp: ts, room: roomName, sensor_type: 'Body Temperature', value: measuredVal, action: 'notify_family', reason, script: script.filename }
+                    ];
+                    actionObjs.forEach(a => results.actions.push(a));
+                });
+            }
+
+            // Calculate statistics using measuredAll filtered
+            const measuredVals = measuredAll.filter(v => v !== null);
+            results.statistics[sensor.roomName || 'Body Temperature'] = {
+                type: 'Body Temperature',
+                measuredMin: measuredVals.length ? Math.min(...measuredVals) : null,
+                measuredMax: measuredVals.length ? Math.max(...measuredVals) : null,
+                measuredAvg: measuredVals.length ? measuredVals.reduce((a, b) => a + b, 0) / measuredVals.length : null,
+                abnormalCount: abnormalPoints.length,
+                normalCount: measuredVals.length - abnormalPoints.length,
+                count: measuredVals.length
+            };
+        }
+    });
+    
+    return results;
+}
+        
+        function checkCsvActionsExist(selectedCsvs) {
+            return selectedCsvs.some(csvKey => {
+                const sensor = sensorData[csvKey];
+                return sensor && sensor.columns.includes('action_taken');
+            });
+        }
+        
+        function extractActionsFromCsv(selectedCsvs) {
+            const actionResults = [];
+            
+            selectedCsvs.forEach(csvKey => {
+                const sensor = sensorData[csvKey];
+                if (!sensor || !sensor.columns.includes('action_taken')) return;
+                
+                sensor.data.forEach((row, index) => {
+                    if (row.action_taken && row.action_taken.trim() !== '') {
+                        // Use CSV date and time data
+                        let timestamp = new Date();
+                        
+                        // Try to parse date from CSV
+                        if (row.date) {
+                            const dateParts = row.date.split('-').map(Number);
+                            if (dateParts.length === 3) {
+                                timestamp = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                            }
+                        }
+                        
+                        // Try to parse time from CSV
+                        const timeStr = row.time || row.timestamp;
+                        if (timeStr) {
+                            const parts = timeStr.split(':').map(Number);
+                            if (parts.length >= 2) {
+                                timestamp.setHours(parts[0] || 0, parts[1] || 0, parts[2] || 0, 0);
+                            }
+                        }
+                        
+                        const action = row.action_taken.trim();
+                        const value = parseFloat(row.temp_c) || parseFloat(row.co2_ppm) || parseFloat(row.rate_of_change) || 0;
+                        const reason = row.reason || `${sensor.sensorType} reading: ${value}`;
+                        
+                      actionResults.push({
+    timestamp,
+    room: row.room || sensor.roomName, // Use actual room from CSV row, fallback to filename-based room
+    sensor_type: sensor.sensorType,
+    value,
+    action,
+    reason
+});
+                    }
+                });
+            });
+            
+            return actionResults;
+        }
+        
+        function generateCsvWithActions(script, selectedCsvs) {
+            const generatedData = [];
+            const actions = [];
+            const baseDate = new Date();
+            
+            // Generate synthetic data based on script analysis
+            const actionProbabilities = analyzeScriptForActions(script);
+            
+            selectedCsvs.forEach(csvKey => {
+                const sensor = sensorData[csvKey];
+                if (!sensor) return;
+                
+                // Generate 20-30 data points with potential actions
+                for (let i = 0; i < 25; i++) {
+                    const timestamp = new Date(baseDate.getTime() + i * 180000); // 3 minute intervals
+                    const timeStr = timestamp.toLocaleTimeString('en-US', { hour12: false });
+                    
+                    // Generate sensor readings
+                    let temp_c, co2_ppm, rate_of_change, actionTaken = '', reason = '';
+                    if (sensor.stats) {
+                        temp_c = sensor.stats.avg + (Math.random() - 0.5) * 10;
+                    }
+                    if (sensor.co2Stats) {
+                        co2_ppm = sensor.co2Stats.avg + (Math.random() - 0.5) * 200;
+                        rate_of_change = (Math.random() - 0.5) * 50;
+                    }
+                    
+                    if (temp_c && temp_c > 25) {
+                        const actionType = Math.random() > 0.5 ? 'adjust_cooling_system' : 'adjust_windows';
+                        actionTaken = actionType;
+                        reason = `Temperature ${temp_c.toFixed(1)}°C exceeded threshold`;
+                    } else if (temp_c && temp_c < 18) {
+                        actionTaken = 'adjust_heating_system';
+                        reason = `Temperature ${temp_c.toFixed(1)}°C below threshold`;
+                    } else if (co2_ppm && co2_ppm > 1000) {
+                        actionTaken = 'adjust_doors';
+                        reason = `CO2 level ${co2_ppm.toFixed(0)}ppm exceeded threshold`;
+                    } else if (rate_of_change && Math.abs(rate_of_change) > 30) {
+                        actionTaken = 'notify_family';
+                        reason = `Rapid CO2 change detected: ${rate_of_change.toFixed(1)}ppm/min`;
+                    } else if (Math.random() > 0.85) {
+                        actionTaken = 'log_to_diary';
+                        reason = `Routine system check completed`;
+                    }
+                    
+                   const roomName = (sensor.data[i] && sensor.data[i].room) || sensor.roomName;
+
+const dataRow = {
+    time: timeStr,
+    room: roomName,
+    temp_c: temp_c ? temp_c.toFixed(1) : '',
+    co2_ppm: co2_ppm ? co2_ppm.toFixed(0) : '',
+    rate_of_change: rate_of_change ? rate_of_change.toFixed(1) : '',
+    action_taken: actionTaken,
+    reason: reason
+};
+                    
+                    generatedData.push(dataRow);
+                    
+                  if (actionTaken) {
+    actions.push({
+        timestamp,
+        room: roomName, // Use the actual room name from CSV or sensor
+        sensor_type: sensor.sensorType,
+        value: temp_c || co2_ppm || rate_of_change || 0,
+        action: actionTaken,
+        reason
+    });
+}
+                }
+            });
+            
+            return {
+                data: generatedData,
+                actions: actions,
+                filename: `${script.filename.replace(/\.[^.]+$/, '')}_generated_data.csv`
+            };
+        }
+        
+        function analyzeScriptForActions(script) {
+            const content = script.content.toLowerCase();
+            const probabilities = {};
+            
+            Object.keys(actionMetadata).forEach(action => {
+                probabilities[action] = 0.1; // Base probability
+                
+                if (content.includes(action) || content.includes(action.replace('_', ' '))) {
+                    probabilities[action] += 0.4;
+                }
+                
+                // Context-based probability adjustments for new action types
+                if (action.includes('cooling') && (content.includes('temperature') || content.includes('temp') || content.includes('cool'))) {
+                    probabilities[action] += 0.3;
+                }
+                if (action.includes('heating') && (content.includes('temperature') || content.includes('temp') || content.includes('heat'))) {
+                    probabilities[action] += 0.3;
+                }
+                if (action.includes('doors') && (content.includes('co2') || content.includes('ventilat') || content.includes('air'))) {
+                    probabilities[action] += 0.3;
+                }
+                if (action.includes('windows') && (content.includes('ventilat') || content.includes('air') || content.includes('fresh'))) {
+                    probabilities[action] += 0.3;
+                }
+                if (action.includes('notify') && (content.includes('alert') || content.includes('emergency'))) {
+                    probabilities[action] += 0.2;
+                }
+                if (action.includes('diary') && (content.includes('log') || content.includes('record'))) {
+                    probabilities[action] += 0.2;
+                }
+            });
+            
+            return probabilities;
+        }
+        
+        function addGeneratedCsvToDownloads(script, generatedCsvData) {
+            let csvContent = "time,room,temp_c,co2_ppm,rate_of_change,action_taken,reason\n";
+            generatedCsvData.data.forEach(row => {
+                csvContent += `${row.time},${row.room},${row.temp_c},${row.co2_ppm},${row.rate_of_change},"${row.action_taken}","${row.reason}"\n`;
+            });
+            
+            const downloadId = `generated_csv_${Date.now()}`;
+            addDownloadItem(downloadId, generatedCsvData.filename, 'text/csv', csvContent, 'Generated CSV with actions');
+        }
+        
+        function processActionResults(actionResults, scriptName = null) {
+            actionResults.forEach((actionResult, index) => {
+                let actionType = actionResult.action;
+                // Normalize action names to match action block names
+                const normalizedAction = normalizeActionName(actionType);
+
+                // Update action state and visual feedback - check if action exists in action block
+                if (actionStates.hasOwnProperty(normalizedAction)) {
+                    actionStates[normalizedAction] = true;
+                    updateActionStatus(normalizedAction, 'activated');
+                    triggerActionAnimation(normalizedAction);
+                }
+
+                // Add to actions timeline data (use normalized action name)
+                // Always use the room from the CSV (row.room if present, else sensor.roomName from sensorData)
+                let timelineRoom = actionResult.room;
+                // If actionResult has a csvKey, prefer sensorData[csvKey].roomNames
+                if (actionResult.csvKey && sensorData[actionResult.csvKey]) {
+                    timelineRoom = sensorData[actionResult.csvKey].roomName;
+                }
+                actionsTimelineData.push({
+                    action: normalizedAction, // Use normalized action name
+                    originalAction: actionResult.action, // Keep original for reference
+                    timestamp: actionResult.timestamp,
+                    room: timelineRoom,
+                    reason: actionResult.reason,
+                    value: actionResult.value,
+                    sensor_type: actionResult.sensor_type,
+                    script: scriptName || (window.executionHistory && window.executionHistory.length > 0 ? (window.executionHistory[window.executionHistory.length - 1].script) : null) // Attach script name for timeline title logic
+                });
+
+                // Simple diary log - only log the actual action from CSV
+                logDiary(`${normalizedAction.replace('_', ' ').toUpperCase()} - ${actionResult.reason}`);
+            });
+        }
+
+   function normalizeActionName(actionName) {
+    // Convert action name to match action block names exactly
+    const cleaned = actionName.toLowerCase().trim();
+    
+    // Direct mapping based on your CSV example and ambient temperature actions
+    const actionMappings = {
+        'adjust doors': 'adjust_doors',
+        'adjust windows': 'adjust_windows', 
+        'adjust heating system': 'adjust_heating_system',
+        'adjust cooling system': 'adjust_cooling_system',
+        'log to diary': 'log_to_diary',
+        'dispatch robot': 'dispatch_robot',
+        'notify family': 'notify_family',
+
+        // Handle variations
+        'open_windows': 'adjust_windows',
+        'close_windows': 'adjust_windows',
+        'open_doors': 'adjust_doors',
+        'close_doors': 'adjust_doors',
+        'activate_cooling': 'adjust_cooling_system',
+        'activate_heating': 'adjust_heating_system',
+
+        // Ambient temperature action text mappings
+        'windows action': 'adjust_windows',
+        'doors action': 'adjust_doors',
+        'cooling system action': 'adjust_cooling_system',
+        'heating system action': 'adjust_heating_system',
+        'contact family': 'notify_family',
+        'log to diary': 'log_to_diary'
+    };
+    
+    // First try direct mapping, then try replacing spaces with underscores
+    const directMapping = actionMappings[cleaned];
+    if (directMapping) {
+        return directMapping;
+    }
+    
+    // Convert spaces to underscores and try again
+    const underscoreVersion = cleaned.replace(/\s+/g, '_');
+    return actionMappings[underscoreVersion] || underscoreVersion;
+}
+        
+        function updateActionStatus(actionType, status) {
+            const actionElement = document.querySelector(`[data-action="${actionType}"]`);
+            if (actionElement) {
+                const statusElement = actionElement.querySelector('.action-status');
+                if (status === 'activated') {
+                    statusElement.textContent = 'Activated';
+                    statusElement.classList.add('active');
+                    actionElement.classList.add('activated');
+                } else {
+                    statusElement.textContent = 'Ready';
+                    statusElement.classList.remove('active');
+                    actionElement.classList.remove('activated');
+                }
+            }
+        }
+        
+        function triggerActionAnimation(actionType) {
+            const actionElement = document.querySelector(`[data-action="${actionType}"]`);
+            if (actionElement) {
+                actionElement.classList.add('triggered');
+                setTimeout(() => {
+                    actionElement.classList.remove('triggered');
+                }, 2000);
+            }
+        }
+        
+        function generateScriptResults(script, selectedCsvs, generatedCsvData = null) {
+            const results = {
+                datasets: [],
+                labels: [],
+                totalRows: 0,
+                statistics: {},
+                scriptName: script.filename
+            };
+            
+            const colors = [
+                'rgba(102, 126, 234, 1)',
+                'rgba(229, 62, 62, 1)', 
+                'rgba(72, 187, 120, 1)',
+                'rgba(237, 137, 54, 1)',
+                'rgba(139, 69, 19, 1)'
+            ];
+            
+            // Use generated data if available, otherwise use original CSV data
+            const dataToUse = generatedCsvData ? [{ 
+                filename: generatedCsvData.filename,
+                data: generatedCsvData.data,
+                roomName: 'Generated',
+                dataPoints: generatedCsvData.data.length
+            }] : selectedCsvs.map(csvKey => sensorData[csvKey]);
+            
+            dataToUse.forEach((sensor, index) => {
+                if (!sensor) return;
+
+                results.totalRows += sensor.dataPoints || sensor.data.length;
+
+                // Process temperature data
+                if (sensor.data[0].temp_c) {
+                    // Build point arrays with x as hour decimal (e.g., 6.5 = 06:30) and y as temperature
+                    const points = sensor.data.map((row, idx) => {
+                        const t = parseFloat(row.temp_c);
+                        // Try to parse time fields: prefer 'time', then 'timestamp'
+                        let hourDecimal = null;
+                        // Robustly locate a time-like field in the row (handles BOM or variant header names)
+                        let timeStr = '';
+                        if (row.time || row.timestamp) {
+                            timeStr = (row.time || row.timestamp).toString();
+                        } else {
+                            // Fallback: scan keys for anything containing 'time' or 'timestamp'
+                            for (const k in row) {
+                                if (!k) continue;
+                                const lk = k.toString().toLowerCase();
+                                if (lk.includes('time')) {
+                                    timeStr = (row[k] || '').toString();
+                                    break;
+                                }
+                            }
+                        }
+                        // Common formats: HH:MM, H:MM, HH:MM:SS, ISO timestamp
+                        if (timeStr) {
+                            // If ISO timestamp, use Date parsing
+                            const isoMatch = timeStr.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+                            try {
+                                if (isoMatch) {
+                                    const d = new Date(timeStr);
+                                    if (!isNaN(d.getTime())) {
+                                        hourDecimal = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+                                    }
+                                } else {
+                                    // Try HH:MM or HH:MM:SS
+                                    const hm = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+                                    if (hm) {
+                                        const h = parseInt(hm[1], 10);
+                                        const m = parseInt(hm[2], 10);
+                                        const s = hm[3] ? parseInt(hm[3], 10) : 0;
+                                        hourDecimal = h + (m / 60) + (s / 3600);
+                                    }
+                                }
+                            } catch (e) {
+                                hourDecimal = null;
+                            }
+                        }
+
+                        // Fallback: if no time parsed, use index as x
+                        if (hourDecimal === null || isNaN(hourDecimal)) {
+                            hourDecimal = idx;
+                        }
+
+                        return { x: hourDecimal, y: isNaN(t) ? null : t, _rawTime: timeStr };
+                    }).filter(p => p.y !== null);
+
+                    // Use all parsed points for display (preserve x values)
+                    const displayPoints = points;
+
+                    // Prepare numeric labels for legacy uses (keep human-readable labels too)
+                    if (results.labels.length === 0) {
+                        results.labels = displayPoints.map(p => {
+                            const h = Math.floor(p.x).toString().padStart(2, '0');
+                            const m = Math.round((p.x - Math.floor(p.x)) * 60).toString().padStart(2, '0');
+                            return `${h}:${m}`;
+                        });
+                    }
+
+                    results.datasets.push({
+                        label: `${sensor.roomName || 'Generated'} Temperature`,
+                        data: displayPoints,
+                        borderColor: colors[index % colors.length],
+                        backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
+                        tension: 0.4,
+                        parsing: false // data already in {x,y} form
+                    });
+
+                    const tempVals = points.map(p => p.y);
+                    results.statistics[sensor.roomName || 'Generated'] = {
+                        type: 'Temperature',
+                        min: Math.min(...tempVals),
+                        max: Math.max(...tempVals),
+                        avg: tempVals.reduce((a, b) => a + b, 0) / tempVals.length,
+                        count: tempVals.length
+                    };
+                }
+
+                // Process CO2 data and rate of change (emit {x,y} points so we can use linear time axis)
+                if (sensor.data[0].co2_ppm) {
+                    // Build CO2 point arrays with x as hour decimal
+                    const co2Points = sensor.data.map((row, idx) => {
+                        const v = parseFloat(row.co2_ppm);
+                        let hourDecimal = null;
+                        let timeStr = '';
+                        if (row.time || row.timestamp) {
+                            timeStr = (row.time || row.timestamp).toString();
+                        } else {
+                            for (const k in row) {
+                                if (!k) continue;
+                                const lk = k.toString().toLowerCase();
+                                if (lk.includes('time')) { timeStr = (row[k] || '').toString(); break; }
+                            }
+                        }
+                        try {
+                            const isoMatch = timeStr.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+                            if (isoMatch) {
+                                const d = new Date(timeStr);
+                                if (!isNaN(d.getTime())) hourDecimal = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+                            } else {
+                                const hm = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+                                if (hm) {
+                                    const h = parseInt(hm[1], 10);
+                                    const m = parseInt(hm[2], 10);
+                                    const s = hm[3] ? parseInt(hm[3], 10) : 0;
+                                    hourDecimal = h + (m / 60) + (s / 3600);
+                                }
+                            }
+                        } catch (e) { hourDecimal = null; }
+                        if (hourDecimal === null || isNaN(hourDecimal)) hourDecimal = idx;
+                        return { x: hourDecimal, y: isNaN(v) ? null : v, _rawTime: timeStr };
+                    }).filter(p => p.y !== null);
+
+                    // Rate of change points
+                    const ratePoints = sensor.data.map((row, idx) => {
+                        const v = parseFloat(row.rate_of_change);
+                        let hourDecimal = null;
+                        let timeStr = '';
+                        if (row.time || row.timestamp) {
+                            timeStr = (row.time || row.timestamp).toString();
+                        } else {
+                            for (const k in row) {
+                                if (!k) continue;
+                                const lk = k.toString().toLowerCase();
+                                if (lk.includes('time')) { timeStr = (row[k] || '').toString(); break; }
+                            }
+                        }
+                        try {
+                            const isoMatch = timeStr.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+                            if (isoMatch) {
+                                const d = new Date(timeStr);
+                                if (!isNaN(d.getTime())) hourDecimal = d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
+                            } else {
+                                const hm = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+                                if (hm) {
+                                    const h = parseInt(hm[1], 10);
+                                    const m = parseInt(hm[2], 10);
+                                    const s = hm[3] ? parseInt(hm[3], 10) : 0;
+                                    hourDecimal = h + (m / 60) + (s / 3600);
+                                }
+                            }
+                        } catch (e) { hourDecimal = null; }
+                        if (hourDecimal === null || isNaN(hourDecimal)) hourDecimal = idx;
+                        return { x: hourDecimal, y: isNaN(v) ? null : v, _rawTime: timeStr };
+                    }).filter(p => p.y !== null);
+
+                    // Use all parsed points
+                    const displayCo2 = co2Points;
+                    const displayRate = ratePoints;
+
+                    // Build datasets (CO2 on primary y, rate on y2)
+                    results.datasets.push({
+                        label: `${sensor.roomName || 'Generated'} CO2`,
+                        data: displayCo2,
+                        borderColor: colors[index % colors.length],
+                        backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
+                        tension: 0.4,
+                        parsing: false
+                    });
+
+                    if (displayRate.length > 0) {
+                        results.datasets.push({
+                            label: `${sensor.roomName || 'Generated'} CO2 Rate of Change`,
+                            data: displayRate,
+                            borderColor: colors[index % colors.length].replace('1)', '0.7)'),
+                            backgroundColor: colors[index % colors.length].replace('1)', '0.1)'),
+                            borderDash: [4, 4],
+                            tension: 0.4,
+                            yAxisID: 'y2',
+                            parsing: false
+                        });
+                    }
+
+                    // Add statistics for CO2
+                    const co2Vals = co2Points.map(p => p.y);
+                    const rateVals = ratePoints.map(p => p.y);
+                    results.statistics[sensor.roomName || 'Generated'] = {
+                        type: 'CO2',
+                        min: Math.min(...co2Vals),
+                        max: Math.max(...co2Vals),
+                        avg: co2Vals.reduce((a, b) => a + b, 0) / co2Vals.length,
+                        count: co2Vals.length,
+                        rateMin: rateVals.length > 0 ? Math.min(...rateVals) : null,
+                        rateMax: rateVals.length > 0 ? Math.max(...rateVals) : null,
+                        rateAvg: rateVals.length > 0 ? rateVals.reduce((a, b) => a + b, 0) / rateVals.length : null
+                    };
+                }
+            });
+
+            return results;
+        }
+        
+        // Graph Modal Functions - Enhanced for multiple script graphs
+        function openGraphModal() {
+            const modal = document.getElementById('graphModal');
+            const container = document.getElementById('graphContainer');
+            const downloadBtn = document.getElementById('downloadGraphBtn');
+            
+            const scriptGraphKeys = Object.keys(scriptGraphs);
+            
+            if (scriptGraphKeys.length === 0) {
+                container.innerHTML = `
+                    <div class="no-graph-message">
+                        <h3>No graph data available</h3>
+                        <p>Execute a script to generate visualization data</p>
+                    </div>
+                `;
+                downloadBtn.disabled = true;
+            } else {
+                // Show list of available graphs
+                container.innerHTML = `
+                    <div class="script-graph-list">
+                        <h4>Available Graphs (${scriptGraphKeys.length}):</h4>
+                        ${scriptGraphKeys.map(scriptId => {
+                            const graphInfo = scriptGraphs[scriptId];
+                            return `
+                                <div class="script-graph-item" onclick="selectScriptGraph('${scriptId}')">
+                                    <strong>${graphInfo.scriptName}</strong>
+                                    <div style="font-size: 0.9em; color: #718096;">
+                                        ${graphInfo.timestamp.toLocaleString()} | 
+                                        ${graphInfo.graphData.datasets.length} datasets | 
+                                        ${graphInfo.actions.length} actions
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div id="selectedGraphContainer">
+                        <div class="no-graph-message">
+                            <h3>Select a script above to view its graph</h3>
+                        </div>
+                    </div>
+                `;
+                
+                downloadBtn.disabled = true;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function selectScriptGraph(scriptId) {
+    // Update visual selection
+    document.querySelectorAll('.script-graph-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    event.target.closest('.script-graph-item').classList.add('selected');
+    
+    const graphInfo = scriptGraphs[scriptId];
+    const container = document.getElementById('selectedGraphContainer');
+    const downloadBtn = document.getElementById('downloadGraphBtn');
+    
+    // Check if this is a body temperature graph
+    if (graphInfo.isBodyTempGraph) {
+        container.innerHTML = `
+            <div class="graph-stats">
+                <h4>Body Temperature Analysis - ${graphInfo.scriptName}</h4>
+                <div class="stats-grid">
+                    ${Object.entries(graphInfo.graphData.statistics).map(([room, stats]) => `
+                        <div class="stat-item">
+                            <div class="stat-label">${room}</div>
+                            <div class="stat-value">
+                                Measured: ${stats.measuredMin.toFixed(1)}°C - ${stats.measuredMax.toFixed(1)}°C<br>
+                                Average: ${stats.measuredAvg.toFixed(1)}°C<br>
+                                Normal: ${stats.normalCount} | Abnormal: ${stats.abnormalCount}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="graph-preview">
+                <canvas id="selectedModalChart" width="800" height="320" style="max-height:320px;"></canvas>
+            </div>
+        `;
+
+        // Chart.js error bars plugin logic (draw only for expected body temperature)
+        setTimeout(() => {
+            const ctx = document.getElementById('selectedModalChart').getContext('2d');
+            const labels = graphInfo.graphData.labels || [];
+            const datasetsCopy = (graphInfo.graphData.datasets || []).map(ds => Object.assign({}, ds));
+
+            // Only keep errorBars for expected body temperature, and make them smaller
+            datasetsCopy.forEach(ds => {
+                const lbl = (ds.label || '').toLowerCase();
+                if (lbl.includes('expected body temperature')) {
+                    ds.borderColor = ds.borderColor || 'rgba(30,144,255,1)';
+                    ds.backgroundColor = ds.backgroundColor || 'rgba(30,144,255,0.2)';
+                    ds.borderWidth = 1.5;
+                    ds.pointRadius = 4;
+                    ds.pointStyle = 'rect';
+                    ds.borderDash = ds.borderDash || [6, 4];
+                    ds.fill = false;
+                    ds.tension = 0;
+                    ds.showLine = true;
+                    // Custom error bar renderer
+                    ds.errorBars = ds.errorBars ? ds.errorBars.map(e => e * 0.5) : undefined;
+                } else {
+                    // Remove errorBars from other datasets
+                    ds.errorBars = undefined;
+                }
+                if (lbl.includes('measured body temperature')) {
+                    ds.borderColor = ds.borderColor || 'rgba(220,20,60,1)';
+                    ds.backgroundColor = ds.backgroundColor || 'rgba(220,20,60,0.2)';
+                    ds.borderWidth = 1.2;
+                    ds.pointRadius = 3;
+                    ds.pointStyle = 'circle';
+                    ds.fill = false;
+                    ds.tension = 0;
+                    ds.showLine = true;
+                }
+                if (lbl.includes('abnormal')) {
+                    if (Array.isArray(ds.data) && ds.data.length > 0 && typeof ds.data[0] !== 'object') {
+                        ds.data = ds.data.map((y, i) => ({ x: labels[i] !== undefined ? labels[i] : i, y }));
+                    }
+                    ds.type = 'scatter';
+                    ds.borderColor = ds.borderColor || 'rgba(255,140,0,1)';
+                    ds.backgroundColor = ds.backgroundColor || 'rgba(255,140,0,1)';
+                    ds.pointStyle = 'cross';
+                    ds.pointRadius = 7;
+                    ds.showLine = false;
+                    ds.fill = false;
+                }
+            });
+
+            // Custom plugin for error bars (draw only for expected body temperature)
+            const errorBarPlugin = {
+                id: 'errorBarPlugin',
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    chart.data.datasets.forEach((ds, i) => {
+                        if (ds.errorBars && ds.label && ds.label.toLowerCase().includes('expected body temperature')) {
+                            const meta = chart.getDatasetMeta(i);
+                            meta.data.forEach((point, idx) => {
+                                const err = ds.errorBars[idx];
+                                if (typeof err === 'number' && !isNaN(err) && err > 0) {
+                                    const x = point.x;
+                                    const y = point.y;
+                                    const yTop = chart.scales.y.getPixelForValue(ds.data[idx] + err);
+                                    const yBottom = chart.scales.y.getPixelForValue(ds.data[idx] - err);
+                                    ctx.save();
+                                    ctx.strokeStyle = 'rgba(30,144,255,0.7)';
+                                    ctx.lineWidth = 1.2;
+                                    // Draw vertical error bar
+                                    ctx.beginPath();
+                                    ctx.moveTo(x, yTop);
+                                    ctx.lineTo(x, yBottom);
+                                    ctx.stroke();
+                                    // Draw small horizontal caps
+                                    ctx.beginPath();
+                                    ctx.moveTo(x - 4, yTop);
+                                    ctx.lineTo(x + 4, yTop);
+                                    ctx.moveTo(x - 4, yBottom);
+                                    ctx.lineTo(x + 4, yBottom);
+                                    ctx.stroke();
+                                    ctx.restore();
+                                }
+                            });
+                        }
+                    });
+                }
+            };
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasetsCopy
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${graphInfo.scriptName} - Body Temperature Analysis`
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 8,
+                                font: { size: 13 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)',
+                                font: { weight: 'bold', size: 13 }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (per hour)',
+                                font: { size: 13 }
+                            },
+                            ticks: {
+                                font: { size: 12 },
+                                callback: function(val, idx) {
+                                    const v = this.getLabelForValue ? this.getLabelForValue(val) : labels[val];
+                                    return v || val;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [errorBarPlugin]
+            });
+        }, 100);
+        
+    } else {
+    // Enhanced logic for other graphs (CO2 + Rate of Change)
+    container.innerHTML = `
+        <div class="graph-stats">
+            <h4>${graphInfo.scriptName} - Data Analysis</h4>
+            <div class="stats-grid">
+                ${Object.entries(graphInfo.graphData.statistics).map(([room, stats]) => `
+                    <div class="stat-item">
+                        <div class="stat-label">${room}</div>
+                        <div class="stat-value">
+                            ${stats.type}: ${stats.min.toFixed(1)} - ${stats.max.toFixed(1)}<br>
+                            Average: ${stats.avg.toFixed(1)}<br>
+                            Count: ${stats.count}
+                            ${stats.rateMin !== undefined && stats.rateMin !== null ? `<br>CO2 Rate Δ: ${stats.rateMin.toFixed(2)} - ${stats.rateMax.toFixed(2)}<br>Avg Δ: ${stats.rateAvg.toFixed(2)}` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <div class="graph-preview">
+            <canvas id="selectedModalChart" width="800" height="400"></canvas>
+        </div>
+    `;
+
+    // Initialize regular chart with dual y-axes for CO2 and Rate of Change
+    setTimeout(() => {
+        const ctx = document.getElementById('selectedModalChart').getContext('2d');
+
+        // Prepare x/y axis limits for charts when datasets contain {x,y}
+        let hasXY = false;
+        const primaryY = []; // values for primary y-axis (temperature or CO2)
+        const secondaryY = []; // values for secondary y-axis (rate of change)
+        graphInfo.graphData.datasets.forEach(ds => {
+            if (Array.isArray(ds.data) && ds.data.length > 0 && typeof ds.data[0] === 'object') {
+                hasXY = true;
+                const isY2 = ds.yAxisID === 'y2';
+                ds.data.forEach(pt => {
+                    if (pt && typeof pt.y === 'number') {
+                        if (isY2) secondaryY.push(pt.y); else primaryY.push(pt.y);
+                    }
+                });
+            } else if (Array.isArray(ds.data)) {
+                ds.data.forEach(v => { if (typeof v === 'number') primaryY.push(v); });
+            }
+        });
+
+        // Detect whether this graph represents CO2 data (use statistics.type or dataset labels)
+        const isCO2Graph = Object.values(graphInfo.graphData.statistics || {}).some(s => s.type === 'CO2') ||
+                           graphInfo.graphData.datasets.some(d => (d.label || '').toLowerCase().includes('co2'));
+
+        // Compute primary y-axis min/max with padding. Use different padding and step sizing for CO2 vs temperature
+        let yMin = primaryY.length > 0 ? Math.min(...primaryY) : null;
+        let yMax = primaryY.length > 0 ? Math.max(...primaryY) : null;
+        if (yMin === null || yMax === null || !isFinite(yMin) || !isFinite(yMax)) { yMin = 0; yMax = 1; }
+        const padding = isCO2Graph ? Math.max(10, (yMax - yMin) * 0.05) : 0.2; // CO2 padding in ppm
+        yMin = isCO2Graph ? Math.floor(yMin - padding) : Math.floor((yMin - padding) * 10) / 10;
+        yMax = isCO2Graph ? Math.ceil(yMax + padding) : Math.ceil((yMax + padding) * 10) / 10;
+
+        // Choose sensible tick step for CO2 ranges (integers) or small decimal for temperature
+        let stepSize;
+        if (isCO2Graph) {
+            const range = yMax - yMin;
+            if (range <= 50) stepSize = 5;
+            else if (range <= 200) stepSize = 10;
+            else if (range <= 500) stepSize = 25;
+            else stepSize = 50;
+        } else {
+            stepSize = 0.1;
+        }
+
+        // Compute secondary y-axis min/max (for rate) if present
+        let y2Min = null, y2Max = null;
+        if (secondaryY.length > 0) {
+            y2Min = Math.min(...secondaryY);
+            y2Max = Math.max(...secondaryY);
+            // small padding
+            const pad2 = Math.max(0.1, Math.abs(y2Max - y2Min) * 0.1);
+            y2Min = Math.floor((y2Min - pad2) * 10) / 10;
+            y2Max = Math.ceil((y2Max + pad2) * 10) / 10;
+        }
+
+        // Build datasets copy so we can tweak visual styles for CO2 without mutating global data
+        const chartDatasets = graphInfo.graphData.datasets.map(ds => {
+            const copy = Object.assign({}, ds);
+            // Apply CO2 visual style: thicker lines, small circular markers, no fill
+            if (isCO2Graph) {
+                copy.borderWidth = 2;
+                copy.pointRadius = 2;
+                copy.pointStyle = copy.pointStyle || 'circle';
+                copy.fill = false;
+            }
+            return copy;
+        });
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                // For {x,y} datasets Chart.js ignores labels; keep labels for fallback
+                labels: graphInfo.graphData.labels,
+                datasets: chartDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `${graphInfo.scriptName} - Data Visualization`
+                    }
+                },
+                scales: {
+                    // Use linear X axis in hours (decimal). Force 06:30 (6.5) to 23:30 (23.5)
+                    x: {
+                        type: hasXY ? 'linear' : 'category',
+                        title: {
+                            display: true,
+                            text: 'Time (per 10 minutes)'
+                        },
+                        min: 6.5,
+                        max: 23.5,
+                        ticks: {
+                            stepSize: 0.5,
+                            callback: function(value) {
+                                // value is in hours (decimal)
+                                if (typeof value === 'number') {
+                                    const h = Math.floor(value).toString().padStart(2, '0');
+                                    const m = Math.round((value - Math.floor(value)) * 60).toString().padStart(2, '0');
+                                    return `${h}:${m}`;
+                                }
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: isCO2Graph ? 'CO2 (ppm)' : 'Temperature (°C)'
+                        },
+                        min: yMin,
+                        max: yMax,
+                        ticks: {
+                            stepSize: stepSize
+                        }
+                    },
+                    y2: (secondaryY.length > 0) ? {
+                        beginAtZero: false,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: isCO2Graph ? 'Rate of Change (ppm/10min)' : ''
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        min: y2Min,
+                        max: y2Max
+                    } : undefined
+                }
+            }
+        });
+    }, 100);
+}
+    
+    // Store selected graph for download
+    window.selectedGraphData = graphInfo.graphData;
+    downloadBtn.disabled = false;
+}
+        
+        function closeGraphModal() {
+            document.getElementById('graphModal').style.display = 'none';
+            window.selectedGraphData = null;
+        }
+        
+        function downloadGraph() {
+            const graphData = window.selectedGraphData;
+            if (!graphData) return;
+            
+            // Generate graph data CSV
+            let graphCsv = "Dataset,Time,Value\n";
+            graphData.datasets.forEach(dataset => {
+                dataset.data.forEach((value, index) => {
+                    graphCsv += `${dataset.label},${graphData.labels[index] || index},${value}\n`;
+                });
+            });
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            addDownloadItem(`graph_${timestamp}`, `Graph_Data_${timestamp}.csv`, 'text/csv', graphCsv, 'Graph visualization data');
+            
+            logDiary('Graph data downloaded successfully');
+            closeGraphModal();
+        }
+        
+        // Actions Timeline Modal Functions - Enhanced with shapes and colors
+       function openActionsTimelineModal() {
+    // Filter out 'log_to_diary' actions
+   const globalFiltered = actionsTimelineData.filter(a => a.action !== 'log_to_diary');
+
+   // Prefer actions from the most recent script run if available
+   let filteredTimelineData = globalFiltered;
+   if (window.executionHistory && window.executionHistory.length > 0) {
+       const lastScript = window.executionHistory[window.executionHistory.length - 1].script;
+       if (lastScript) {
+           const byScript = globalFiltered.filter(a => a.script && a.script === lastScript);
+           if (byScript.length > 0) filteredTimelineData = byScript;
+       }
+   }
+    
+    const modal = document.getElementById('actionsTimelineModal');
+    const container = document.getElementById('actionsTimelineContainer');
+    const downloadBtn = document.getElementById('downloadActionsBtn');
+            
+            if (filteredTimelineData.length === 0) {
+                container.innerHTML = `
+                    <div class="no-graph-message">
+                        <h3>No action data available</h3>
+                        <p>Execute a script to generate action timeline data</p>
+                    </div>
+                `;
+                downloadBtn.disabled = true;
+            } else {
+                // Generate dynamic title based on data
+const timelineTitle = generateTimelineTitle(filteredTimelineData);
+                // Create timeline visualization with shapes and colors
+                const timelineData = createActionsTimelineData();
+                
+               container.innerHTML = `
+    <div class="timeline-title">
+        <h3>${timelineTitle}</h3>
+    </div>
+    <div class="graph-stats">
+        <h4>Actions Timeline Statistics</h4>
+        
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Total Actions</div>
+                                <div class="stat-value">${filteredTimelineData.length}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Unique Action Types</div>
+                                <div class="stat-value">${new Set(filteredTimelineData.map(a => a.action)).size}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Time Span</div>
+                                <div class="stat-value">${getTimeSpan()}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Rooms Affected</div>
+                                <div class="stat-value">${new Set(filteredTimelineData.map(a => a.room)).size}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="graph-preview">
+                        <canvas id="actionsTimelineChart" width="800" height="400"></canvas>
+                    </div>
+                `;
+                
+                // Initialize enhanced timeline chart with proper y-axis
+                setTimeout(() => {
+                    const ctx = document.getElementById('actionsTimelineChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'scatter',
+                        data: timelineData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: false,
+                                    text: 'Actions Timeline - Shapes by Action Type, Colors by Room'
+                                },
+                                legend: {
+                                    display: false // Remove legend as requested
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: 'linear',
+                                    title: {
+                                        display: true,
+                                        text: 'Time (24-hour format)'
+                                    },
+                                    min: 6,
+                                    max: 24,
+                                    ticks: {
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            return value.toString().padStart(2, '0') + ':00';
+                                        }
+                                    }
+                                },
+y: {
+    type: 'category',
+    labels: [
+        'Windows Action',
+        'Cooling System Action', 
+        'Heating System Action',
+        'Doors Action',
+        'Dispatch Robot',
+        'Contact Family'
+    ],
+    title: {
+        display: false
+    },
+    offset: true
+}                      },
+                            interaction: {
+                                mode: 'point'
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        title: function(context) {
+                                            return 'Action Details';
+                                        },
+                                        label: function(context) {
+                                            const point = context.raw;
+                                            return [
+                                                `Time: ${point.timeDisplay}`,
+                                                `Room: ${point.room}`,
+                                                `Action: ${point.action}`,
+                                                `Reason: ${point.reason}`,
+                                                `Value: ${point.value}`
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }, 100);
+                
+                downloadBtn.disabled = false;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function createActionsTimelineData() {
+            const filteredData = actionsTimelineData.filter(a => a.action !== 'log_to_diary');
+            if (filteredData.length === 0) return { datasets: [] };
+            
+            // Sort by time
+            filteredData.sort((a, b) => a.timestamp - b.timestamp);
+            
+            // Fixed action types in the order you specified
+            const actionTypes = [
+                'windows action',
+                'cooling system action',
+                'heating system action',
+                'doors action',
+                'dispatch robot',
+                'contact family'
+            ];
+            
+            // Create position mapping for actions
+            const actionPositions = {};
+            actionTypes.forEach((action, index) => {
+                actionPositions[action] = index;
+            });
+            
+            // Create a single dataset with all points
+            const allPoints = filteredData.map(a => {
+                const hours = a.timestamp.getHours();
+                const minutes = a.timestamp.getMinutes();
+                const hourDisplay = hours + (minutes / 60);
+                const timeDisplay = a.timestamp.toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                // Normalize room and action for mapping
+                const normalizedRoom = (a.room || '').toString().toLowerCase().trim();
+                const normalizedAction = (a.action || '').toString().toLowerCase().trim();
+
+                // Always use mapping for color and shape (no fallback to action block)
+                const roomColor = roomColorMapping[normalizedRoom] || '#3b82f6';
+                const actionShape = actionShapeMapping[normalizedAction]?.pointStyle || 'circle';
+
+                return {
+                    x: hourDisplay,
+                    y: (() => {
+                        // Map normalized action to display name
+                        const displayMap = {
+                            'adjust_windows': 'Windows Action',
+                            'adjust_cooling_system': 'Cooling System Action',
+                            'adjust_heating_system': 'Heating System Action',
+                            'adjust_doors': 'Doors Action',
+                            'dispatch_robot': 'Dispatch Robot',
+                            'notify_family': 'Contact Family',
+                            'windows action': 'Windows Action',
+                            'cooling system action': 'Cooling System Action',
+                            'heating system action': 'Heating System Action',
+                            'doors action': 'Doors Action',
+                            'dispatch robot': 'Dispatch Robot',
+                            'contact family': 'Contact Family'
+                        };
+                        return displayMap[normalizedAction] || normalizedAction.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                    })(),
+                    timeDisplay: timeDisplay,
+                    room: a.room,
+                    action: a.action.replace('_', ' ').toUpperCase(),
+                    reason: a.reason,
+                    value: a.value,
+                    backgroundColor: roomColor,
+                    borderColor: roomColor,
+                    pointStyle: actionShape
+                };
+            });
+            
+            return { 
+                datasets: [{
+                    label: 'Action Timeline',
+                    data: allPoints,
+                    backgroundColor: function(context) {
+                        return context.parsed ? context.raw.backgroundColor : (context.raw && context.raw.backgroundColor) || '#3b82f6';
+                    },
+                    borderColor: function(context) {
+                        return context.parsed ? context.raw.borderColor : (context.raw && context.raw.borderColor) || '#3b82f6';
+                    },
+                    pointRadius: 5,
+                    pointHoverRadius: 6,
+                    pointStyle: function(context) {
+                        return context.parsed ? context.raw.pointStyle : 'circle';
+                    },
+                    showLine: false
+                }],
+                actionTypes: actionTypes,
+                actionLabels: [
+                    'Windows Action',
+                    'Cooling System Action',
+                    'Heating System Action',
+                    'Doors Action',
+                    'Dispatch Robot',
+                    'Contact Family',
+                    'Log To Diary'
+                ]
+            };
+        }
+        
+        function getTimeSpan() {
+            if (actionsTimelineData.length === 0) return 'N/A';
+            
+            const first = actionsTimelineData[0].timestamp.toLocaleTimeString();
+            const last = actionsTimelineData[actionsTimelineData.length - 1].timestamp.toLocaleTimeString();
+            return `${first} to ${last}`;
+        }
+  function generateTimelineTitle(filteredTimelineData) {
+    if (!filteredTimelineData || filteredTimelineData.length === 0) return 'Actions Timeline';
+
+    // Build a unique room list
+    const rooms = [...new Set(filteredTimelineData.map(a => a.room || 'Unknown'))];
+
+    // Detect types from script names (if present) and from actions/sensor metadata
+    const types = new Set();
+
+    // Helper to mark types from a string
+    function markFromString(s) {
+        if (!s) return;
+        s = s.toString().toLowerCase();
+        if (s.includes('body') || s.includes('measured_body') || s.includes('body_temp')) types.add('Body Temperature');
+        if (s.includes('amb') || s.includes('ambient')) types.add('Ambient Temperature');
+        if (s.includes('temperature') && !s.includes('body') && !s.includes('ambient')) types.add('Ambient Temperature');
+        if (s.includes('co2') || s.includes('co_2')) types.add('CO2');
+        if (s.includes('humidity')) types.add('Humidity');
+        if (s.includes('activity')) types.add('Activity');
+        if (s.includes('pressure')) types.add('Pressure');
+    }
+
+    // 1) Script names: collect all unique script filenames present in the timeline data
+    const scriptSet = new Set();
+    filteredTimelineData.forEach(a => { if (a.script) scriptSet.add(a.script); });
+
+    // If no scripts on actions, try to gather recent scripts from executionHistory (last 3)
+    if (scriptSet.size === 0 && window.executionHistory && window.executionHistory.length > 0) {
+        window.executionHistory.slice(-3).forEach(h => { if (h && h.script) scriptSet.add(h.script); });
+    }
+
+    const roomDescQuick = (function() {
+        if (!rooms || rooms.length === 0) return '';
+        if (rooms.length === 1) return ` - ${rooms[0]}`;
+        if (rooms.length === 2) return ` - ${rooms.join(' & ')}`;
+        if (rooms.length <= 4) return ` - ${rooms.slice(0, -1).join(', ')} & ${rooms[rooms.length - 1]}`;
+        return ` - All Rooms`;
+    })();
+
+    if (scriptSet.size > 0) {
+        // Map script filenames to friendly display names and keep ordering
+        function mapScriptToLabel(s) {
+            if (!s) return null;
+            const lname = s.toString().toLowerCase();
+            if (lname.includes('body')) return 'Body Temperature';
+            if (lname.includes('amb') || lname.includes('ambient')) return 'Ambient Temperature';
+            if (lname.includes('co2') || lname.includes('co_2')) return 'CO2';
+            // fallback: prettify filename
+            const base = s.replace(/\.[^/.]+$/, '').replace(/_/g, ' ');
+            return base.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        const labels = [];
+        scriptSet.forEach(s => {
+            const label = mapScriptToLabel(s);
+            if (label && !labels.includes(label)) labels.push(label);
+        });
+
+        if (labels.length > 0) {
+            const titleMain = `${labels.join(' & ')} Graph`;
+            return `${titleMain}${roomDescQuick}`;
+        }
+    }
+
+    // If scripts did not provide headings, mark types from the (possibly empty) scriptName set
+    // (keep older behavior by trying to infer types below)
+
+    // 2) From action sensor_type and per-action room sensor metadata
+    filteredTimelineData.forEach(a => {
+        markFromString(a.sensor_type);
+        // try to find sensor matching room to inspect filename/columns
+        const roomKey = (a.room || '').toString().toLowerCase();
+        const sensorForRoom = Object.values(sensorData).find(s => {
+            const rn = (s.roomName || '').toString().toLowerCase();
+            return rn === roomKey || (s.filename || '').toString().toLowerCase().includes(roomKey);
+        });
+        if (sensorForRoom) {
+            markFromString(sensorForRoom.filename);
+            markFromString((sensorForRoom.columns || []).join(' '));
+        }
+    });
+
+    // 3) Fallback: scan all sensors if still empty
+    if (types.size === 0) {
+        Object.values(sensorData).forEach(s => {
+            markFromString(s.filename);
+            markFromString(s.roomName);
+            markFromString((s.columns || []).join(' '));
+        });
+    }
+
+    // Create ordered detected list (preferred order)
+    const preferred = ['Body Temperature', 'Ambient Temperature', 'CO2', 'Humidity', 'Activity', 'Pressure'];
+    const detected = preferred.filter(p => types.has(p)).concat([...types].filter(t => !preferred.includes(t)));
+
+    const titleMain = detected.length > 0 ? `${detected.join(' & ')} Graph` : 'Environmental Graph';
+
+    // Rooms description
+    let roomDescription = '';
+    if (rooms.length === 1) roomDescription = ` - ${rooms[0]}`;
+    else if (rooms.length === 2) roomDescription = ` - ${rooms.join(' & ')}`;
+    else if (rooms.length <= 4) roomDescription = ` - ${rooms.slice(0, -1).join(', ')} & ${rooms[rooms.length - 1]}`;
+    else roomDescription = ` - All Rooms (${rooms.length})`;
+
+    return `${titleMain}${roomDescription}`;
+}
+        function getTimeSpanFiltered() {
+    const filteredData = actionsTimelineData.filter(a => a.action !== 'log_to_diary');
+    if (filteredData.length === 0) return 'N/A';
+    
+    const first = filteredData[0].timestamp.toLocaleTimeString();
+    const last = filteredData[filteredData.length - 1].timestamp.toLocaleTimeString();
+    return `${first} to ${last}`;
+}
+        function closeActionsTimelineModal() {
+            document.getElementById('actionsTimelineModal').style.display = 'none';
+        }
+        
+       function downloadActionsTimeline() {
+    const filteredTimelineData = actionsTimelineData.filter(action => 
+    action.action !== 'log_to_diary'
+);
+    if (filteredTimelineData.length === 0) return;
+    
+    let timelineCsv = "Action_Type,Action_Shape,Room,Room_Color,Timestamp,Hour,Reason,Value,Sensor_Type,Seconds_From_Start\n";
+    const startTime = Math.min(...filteredTimelineData.map(a => a.timestamp.getTime()));
+    
+    filteredTimelineData.forEach(action => {
+    const actionShape = actionShapeMapping[action.action]?.shape || '●';
+    const normalizedRoom = (action.room || '').toString().toLowerCase().trim();
+    const actionElem = document.querySelector(`[data-action="${action.action}"]`);
+    const actionBlockColor = actionElem ? actionElem.getAttribute('data-color') : null;
+    const roomColor = roomColorMapping[normalizedRoom] || actionBlockColor || '#3b82f6';
+                const hour = action.timestamp.getHours() + (action.timestamp.getMinutes() / 60);
+                const secondsFromStart = (action.timestamp.getTime() - startTime) / 1000;
+                
+                timelineCsv += `"${action.action}","${actionShape}","${action.room}","${roomColor}","${action.timestamp.toISOString()}",${hour.toFixed(2)},"${action.reason}","${action.value}","${action.sensor_type}",${secondsFromStart}\n`;
+            });
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            addDownloadItem(`actions_timeline_${timestamp}`, `Actions_Timeline_${timestamp}.csv`, 'text/csv', timelineCsv, 'Actions timeline with shapes by action, colors by room');
+            
+            logDiary('Actions timeline data downloaded successfully');
+            closeActionsTimelineModal();
+        }
+        
+        function generateScriptReport(script, selectedCsvs, results, actionResults) {
+            const reportId = 'script_report_' + Date.now();
+            
+            let reportContent = `SCRIPT EXECUTION REPORT\n========================\n\n`;
+            reportContent += `Script: ${script.filename}\nExecution Time: ${new Date().toLocaleString()}\n`;
+            reportContent += `CSV Files Used: ${selectedCsvs.join(', ')}\nTotal Data Points: ${results.totalRows}\n`;
+            reportContent += `Actions Triggered: ${actionResults.length}\n\n`;
+            
+            reportContent += `ACTIONS TAKEN:\n--------------\n`;
+            actionResults.forEach((action, index) => {
+                const actionShape = actionShapeMapping[action.action]?.shape || '●';
+                const normalizedRoom = (action.room || '').toString().toLowerCase().trim();
+                const actionElemR = document.querySelector(`[data-action="${action.action}"]`);
+                const actionBlockColorR = actionElemR ? actionElemR.getAttribute('data-color') : null;
+                const roomColor = roomColorMapping[normalizedRoom] || actionBlockColorR || '#3b82f6';
+                reportContent += `${index + 1}. [${action.timestamp.toLocaleTimeString()}] ${actionShape} ${action.action.toUpperCase().replace('_', ' ')}\n`;
+                reportContent += `   Room: ${action.room} | Room Color: ${roomColor} | Reason: ${action.reason}\n\n`;
+            });
+            
+            // Generate enhanced action CSV with new color and shape mappings
+            let actionCsv = "Timestamp,Hour,Room,Sensor_Type,Value,Action,Reason,Action_Shape,Room_Color\n";
+            actionResults.forEach(action => {
+                const actionShape = actionShapeMapping[action.action]?.shape || '●';
+                const normalizedRoom = (action.room || '').toString().toLowerCase().trim();
+                const actionElem2 = document.querySelector(`[data-action="${action.action}"]`);
+                const actionBlockColor2 = actionElem2 ? actionElem2.getAttribute('data-color') : null;
+                const roomColor = roomColorMapping[normalizedRoom] || actionBlockColor2 || '#3b82f6';
+                const hour = action.timestamp.getHours() + (action.timestamp.getMinutes() / 60);
+                actionCsv += `${action.timestamp.toISOString()},${hour.toFixed(2)},${action.room},${action.sensor_type},${action.value},${action.action},"${action.reason}","${actionShape}","${roomColor}"\n`;
+            });
+            
+            addDownloadItem(reportId + '_report', `${script.filename.replace('.', '_')}_Report.txt`, 'text/plain', reportContent, 'Execution report with visual indicators');
+            addDownloadItem(reportId + '_actions', `${script.filename.replace('.', '_')}_Actions.csv`, 'text/csv', actionCsv, 'Actions data with colors and shapes');
+            
+            logDiary(`Report generated and available for download`);
+        }
+        
+        function logDiary(message, type = 'system', timestamp = null) {
+            const diaryLog = document.getElementById('diaryLog');
+            const entryTime = timestamp || new Date();
+            
+            const diaryEntry = document.createElement('div');
+            diaryEntry.className = `diary-entry ${type}-entry`;
+            
+            let entryContent = `<div class="diary-timestamp">[${entryTime.toLocaleString()}]</div>`;
+            entryContent += `<div>${message}</div>`;
+            
+            diaryEntry.innerHTML = entryContent;
+            diaryLog.appendChild(diaryEntry);
+            diaryLog.scrollTop = diaryLog.scrollHeight;
+            
+            diaryEntries.push({
+                timestamp: entryTime,
+                message: message,
+                type: type
+            });
+        }
+        
+        function clearDiary() {
+            const diaryLog = document.getElementById('diaryLog');
+            diaryLog.innerHTML = `
+                <div class="diary-entry system-entry">
+                    <div class="diary-timestamp">Diary cleared - Ready for new monitoring</div>
+                </div>
+            `;
+            diaryEntries = [];
+            actionsTimelineData = []; // Clear timeline data too
+            scriptGraphs = {}; // Clear all script graphs
+            
+            // Reset all action states
+            Object.keys(actionStates).forEach(actionType => {
+                actionStates[actionType] = false;
+                updateActionStatus(actionType, 'ready');
+            });
+            
+            logDiary('System reset - All data cleared');
+        }
+        
+        function exportDiary() {
+            if (diaryEntries.length === 0) {
+                logDiary('No diary entries to export');
+                return;
+            }
+            
+            let diaryContent = "SYSTEM DIARY EXPORT\n==================\n\n";
+            diaryContent += `Export Date: ${new Date().toLocaleString()}\nTotal Entries: ${diaryEntries.length}\n\n`;
+            
+            diaryEntries.forEach((entry, index) => {
+                diaryContent += `Entry ${index + 1}:\n`;
+                diaryContent += `Timestamp: ${entry.timestamp.toLocaleString()}\n`;
+                diaryContent += `Type: ${entry.type.toUpperCase()}\n`;
+                diaryContent += `Message: ${entry.message}\n\n`;
+            });
+            
+            let diaryCsv = "Timestamp,Type,Message\n";
+            diaryEntries.forEach(entry => {
+                diaryCsv += `"${entry.timestamp.toISOString()}","${entry.type}","${entry.message.replace(/"/g, '""')}"\n`;
+            });
+            
+            const exportId = 'diary_export_' + Date.now();
+            addDownloadItem(exportId + '_txt', 'System_Diary_Export.txt', 'text/plain', diaryContent, 'Complete diary export');
+            addDownloadItem(exportId + '_csv', 'System_Diary_Export.csv', 'text/csv', diaryCsv, 'Diary data in CSV format');
+            
+            logDiary('Diary exported successfully');
+        }
+        
+        function clearSensors() {
+            sensorData = {};
+            updateSensorsList();
+            updateScriptsList();
+            logDiary('Cleared all sensor data');
+        }
+        
+        function clearScripts() {
+            scriptFiles = {};
+            scriptGraphs = {};
+            updateScriptsList();
+            logDiary('Cleared all script files and graphs');
+        }
+        
+        function addDownloadItem(id, filename, type, content, description) {
+            const downloadsContainer = document.getElementById('downloadsContainer');
+            
+            if (downloadsContainer.querySelector('p')) {
+                downloadsContainer.innerHTML = '';
+            }
+            
+            const downloadItem = document.createElement('div');
+            downloadItem.className = 'download-item';
+            downloadItem.innerHTML = `
+                <div>
+                    <strong>${filename}</strong>
+                    <div>${description}</div>
+                    <div class="progress-bar"><div class="progress" style="width: 100%;"></div></div>
+                </div>
+                <button class="btn" onclick="downloadFile('${id}', '${filename}', '${type}')">💾 Download</button>
+            `;
+            
+            downloadsContainer.appendChild(downloadItem);
+            window['downloadContent_' + id] = content;
+        }
+        
+        function downloadFile(id, filename, type) {
+            const content = window['downloadContent_' + id];
+            if (!content) return;
+            
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logDiary(`Downloaded: ${filename}`);
+        }
+
+        function getTemperatureSubtype(sensorInfo) {
+    const name = sensorInfo.filename.toLowerCase();
+    const columns = sensorInfo.columns.map(c => c.toLowerCase());
+    if (name.includes('body') || columns.some(c => c.includes('body'))) {
+        return 'Body Temperature';
+    }
+    return 'Ambient Temperature';
+}
+    </script>
+</body>
+</html>
